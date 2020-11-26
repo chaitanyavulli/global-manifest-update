@@ -55,15 +55,15 @@ node('docker_build') {
                         $class: 'GitSCM',
                         branches: [[name: 'origin/private/git-tag-test-branch']],
                         browser: [$class: 'BitbucketWeb',
-                        repoUrl: 'https://https://git.parallelwireless.net/projects/TOOL/repos/ltesim/browse'],
+                        repoUrl: 'https://git.parallelwireless.net/projects/CD/repos/global-packaging/browse'],
                         doGenerateSubmoduleConfigurations: false,
                         extensions: [],
                         submoduleCfg: [],
-                        userRemoteConfigs: [[url: 'ssh://git@git.parallelwireless.net:7999/tool/ltesim.git']]
+                        userRemoteConfigs: [[url: 'ssh://git@git.parallelwireless.net:7999/cd/global-packaging.git']]
                     ])
                     
                     sh("git checkout -b ltesim-tag-update-${short_hash}")
-                    sh("sed -e 's/\"core-stacks\": \".*\"/\"core-stacks\": \"${short_hash}\"/' --in-place manifest.json") 
+                    sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${short_hash}\"/' --in-place manifest.json") 
                     sh("git commit -m 'tag-update auto upgrade' manifest.json")
                     sh("git push --set-upstream origin ltesim-tag-update-${short_hash}")
                 }
