@@ -23,6 +23,7 @@ node('docker_build') {
         notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
         
         def short_hash
+        def branch_name
         try {
              stage('Fetching Code') {
                 dir("${verCode}") {
@@ -47,6 +48,10 @@ node('docker_build') {
                 dir("${verCode}/${repository_slug}/") {
                     short_hash = sh (script: 'git rev-parse --short=8 HEAD',returnStdout: true).trim()
                 }
+                dir("${verCode}/${repository_slug}/") {
+                    branch_name = sh (script: "git branch --contains ${PW_BRANCH}",returnStdout: true).trim(' ', '*')
+                    println branch_name
+                }
             }
         
         stage('Change Packaging Repo') {
@@ -62,22 +67,13 @@ node('docker_build') {
                         userRemoteConfigs: [[url: 'ssh://git@git.parallelwireless.net:7999/cd/global-packaging.git']]
                     ])
                     
-                    sh("git checkout -b private/ltesim-tag-update-${short_hash}")
+                    sh("git checkout -b integ/${branch_name}")
                     sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json") 
                     sh("git commit -m 'tag-update auto upgrade' manifest.json")
-                    sh("git push --set-upstream origin private/ltesim-tag-update-${short_hash}")
+                    sh("git push --set-upstream origin integ/${branch_name}")
                 }
             }
             
-        stage('Publish') {
-                dir("${verCode}/${repository_slug}/${ci_dir}") {
-                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                     echo "Publish"
-                    }
-                }
-            }
-
-
             currentBuild.result = 'SUCCESS'
         }
         catch (Exception Error) {
