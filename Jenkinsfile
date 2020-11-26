@@ -62,10 +62,10 @@ node('docker_build') {
                         userRemoteConfigs: [[url: 'ssh://git@git.parallelwireless.net:7999/cd/global-packaging.git']]
                     ])
                     
-                    sh("git checkout -b ltesim-tag-update-${short_hash}")
-                    sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${short_hash}\"/' --in-place manifest.json") 
+                    sh("git checkout -b private/ltesim-tag-update-${short_hash}")
+                    sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json") 
                     sh("git commit -m 'tag-update auto upgrade' manifest.json")
-                    sh("git push --set-upstream origin ltesim-tag-update-${short_hash}")
+                    sh("git push --set-upstream origin private/ltesim-tag-update-${short_hash}")
                 }
             }
             
