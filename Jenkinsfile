@@ -38,7 +38,7 @@ node('docker_build') {
                         mkdir ${PW_REPOSITORY}
                         cd ${PW_REPOSITORY}
                         git init
-                        git remote add origin ssh://git@git.parallelwireless.net:7999/tool/ltesim.git
+                        git remote add origin ssh://git@git.parallelwireless.net:7999/tool/uniperf.git
                         git fetch --depth 2 origin ${NEW_COMMIT_HASH}
                         git checkout FETCH_HEAD
                         """
@@ -69,20 +69,6 @@ node('docker_build') {
                 }
             }
             
-        stage('Docker Build')
-            {
-             dir("${verCode}/${repository_slug}/") {
-                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                     
-                    echo "PW_BRANCH $PW_BRANCH"
-                    echo "NEW_COMMIT_HASH $NEW_COMMIT_HASH"
-                    sh """
-                    docker build -t pwtools-${PW_BRANCH}:${NEW_COMMIT_HASH} .
-                    """
-                   }
-               }
-             }
-
         stage('Publish') {
                 dir("${verCode}/${repository_slug}/${ci_dir}") {
                     catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
