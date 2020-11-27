@@ -40,17 +40,16 @@ node('docker_build') {
                         cd ${PW_REPOSITORY}
                         git init
                         git remote add origin ssh://git@git.parallelwireless.net:7999/tool/uniperf.git
-                        git fetch origin ${NEW_COMMIT_HASH}
-                        git checkout FETCH_HEAD
+                        git fetch
                         """
                     } 
                 }
                 dir("${verCode}/${repository_slug}/") {
-                    short_hash = sh (script: 'git rev-parse --short=8 HEAD',returnStdout: true).trim()
+                    branch_name = sh (script: "git branch --contains ${PW_BRANCH} -a | head -n 1 | sed 's/.*remotes\/origin\///'",returnStdout: true).trim()
+                    println branch_name
                 }
                 dir("${verCode}/${repository_slug}/") {
-                    branch_name = sh (script: "git branch --contains ${PW_BRANCH}",returnStdout: true).trim(' ', '*')
-                    println branch_name
+                    short_hash = sh (script: 'git rev-parse --short=8 HEAD',returnStdout: true).trim()
                 }
             }
         
@@ -69,7 +68,7 @@ node('docker_build') {
                     
                     sh("git checkout -b integ/${branch_name}")
                     sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json") 
-                    sh("git commit -m 'tag-update auto upgradecy' manifest.json")
+                    sh("git commit -m 'tag-update auto upgrade' manifest.json")
                     sh("git push --set-upstream origin integ/${branch_name}")
                 }
             }
