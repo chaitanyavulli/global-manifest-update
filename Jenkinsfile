@@ -40,7 +40,7 @@ node('docker_build') {
                         cd ${PW_REPOSITORY}
                         git init
                         git remote add origin ssh://git@git.parallelwireless.net:7999/tool/uniperf.git
-                        git fetch --depth 2 origin ${NEW_COMMIT_HASH}
+                        git fetch origin ${NEW_COMMIT_HASH}
                         git checkout FETCH_HEAD
                         """
                     } 
@@ -69,7 +69,7 @@ node('docker_build') {
                     
                     sh("git checkout -b integ/${branch_name}")
                     sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json") 
-                    sh("git commit -m 'tag-update auto upgrade' manifest.json")
+                    sh("git commit -m 'tag-update auto upgradecy' manifest.json")
                     sh("git push --set-upstream origin integ/${branch_name}")
                 }
             }
