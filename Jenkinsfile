@@ -45,11 +45,8 @@ node('docker_build') {
                     } 
                 }
                 dir("${verCode}/${repository_slug}/") {
-                    branch_name = sh (script: "git branch --contains ${PW_BRANCH} -a | head -n 1 | sed 's/.*remotes\\/origin\\///'",returnStdout: true).trim()
+                    branch_name = sh (script: "git branch --contains ${PW_BRANCH} -a | tail -n 1 | sed 's/.*remotes\\/origin\\///'",returnStdout: true).trim()
                     println branch_name
-                }
-                dir("${verCode}/${repository_slug}/") {
-                    short_hash = sh (script: 'git rev-parse --short=8 HEAD',returnStdout: true).trim()
                 }
             }
         
