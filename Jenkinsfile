@@ -46,6 +46,7 @@ node('docker_build') {
                 }
                 dir("${verCode}/${repository_slug}/") {
                     branch_name = sh (script: "git branch --contains ${PW_BRANCH} -a | tail -n 1 | sed 's/.*remotes\\/origin\\///'",returnStdout: true).trim()
+                    commit_hash = sh (script: 'git rev-parse HEAD',returnStdout: true).trim()
                     println branch_name
                 }
             }
@@ -66,7 +67,7 @@ node('docker_build') {
                     sh("git checkout -b integ/${branch_name}")
                     sh("git branch --set-upstream-to=origin/integ/${branch_name} integ/${branch_name}")
                     sh("git pull")
-                    sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json") 
+                    sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${commit_hash}\"/' --in-place manifest.json") 
                     sh("git commit -m 'tag-update commitID auto upgrade' manifest.json")
                     sh("git push --set-upstream origin integ/${branch_name}")
                 }
