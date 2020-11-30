@@ -46,6 +46,8 @@ node('docker_build') {
                 }
                 dir("${verCode}/${repository_slug}/") {
                     branch_name = sh (script: "git branch --contains ${PW_BRANCH} -a | tail -n 1 | sed 's/.*remotes\\/origin\\///'",returnStdout: true).trim()
+                    sh (script: "git fetch --depth 2 origin ${NEW_COMMIT_HASH}")
+                    sh (script: "git checkout FETCH_HEAD")
                     commit_hash = sh (script: 'git rev-parse HEAD',returnStdout: true).trim()
                     println branch_name
                 }
