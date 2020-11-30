@@ -56,16 +56,16 @@ node('docker_build') {
                         $class: 'GitSCM',
                         branches: [[name: 'origin/private/git-tag-test-branch']],
                         browser: [$class: 'BitbucketWeb',
-                        repoUrl: 'https://git.parallelwireless.net/projects/CD/repos/global-packaging/browse'],
+                        repoUrl: 'https://git.parallelwireless.net/projects/CD/repos/integrated-packaging/browse'],
                         doGenerateSubmoduleConfigurations: false,
                         extensions: [],
                         submoduleCfg: [],
-                        userRemoteConfigs: [[url: 'ssh://git@git.parallelwireless.net:7999/cd/global-packaging.git']]
+                        userRemoteConfigs: [[url: 'ssh://git@git.parallelwireless.net:7999/cd/integrated-packaging.git']]
                     ])
                     
                     sh("git checkout -b integ/${branch_name}")
                     sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json") 
-                    sh("git commit -m 'tag-update auto upgrade' manifest.json")
+                    sh("git commit -m 'tag-update commitID auto upgrade' manifest.json")
                     sh("git push --set-upstream origin integ/${branch_name}")
                 }
             }
@@ -87,8 +87,8 @@ node('docker_build') {
 def notifySuccessful() {
      emailext (
          attachLog: true,
-         subject: "${env.JOB_NAME} Build #${env.BUILD_DISPLAY_NAME} status: ${currentBuild.result}",
-         body: "HNG Functional test: ${env.JOB_NAME} Build #${env.BUILD_DISPLAY_NAME} status: ${currentBuild.result} <br> Check console output at ${env.BUILD_URL} to view the results",
+         subject: "Manifest file updated",
+         body: "Manifest file updated",
          mimeType: 'text/html',
          recipientProviders: [developers(), requestor()]
     )
