@@ -64,6 +64,7 @@ node('docker_build') {
                     ])
                     
                     sh("git checkout -b integ/${branch_name}")
+                    sh("git branch --set-upstream-to=origin/integ/${branch_name} integ/${branch_name}")
                     sh("git pull")
                     sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json") 
                     sh("git commit -m 'tag-update commitID auto upgrade' manifest.json")
