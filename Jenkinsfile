@@ -54,7 +54,7 @@ node('docker_build') {
                 dir("${verCode}/packaging-repo") {
                     checkout([
                         $class: 'GitSCM',
-                        branches: [[name: 'origin/private/git-tag-test-branch']],
+                        branches: [[name: 'develop']],
                         browser: [$class: 'BitbucketWeb',
                         repoUrl: 'https://git.parallelwireless.net/projects/CD/repos/integrated-packaging/browse'],
                         doGenerateSubmoduleConfigurations: false,
