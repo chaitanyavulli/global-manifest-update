@@ -21,13 +21,16 @@ node('docker_build') {
         def verCode = UUID.randomUUID().toString()
 
         notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
-        
+
+        def git_remotes = ['uniperf': 'ssh://git@git.parallelwireless.net:7999/tool/uniperf.git']
         def short_hash
         def branch_name
         try {
              stage('Fetching Code') {
                 dir("${verCode}") {
                     def retryAttempt = 0
+                    def mirror = git_remotes(PW_REPOSITORY)
+                    println mirror
                     retry(2) {
                         if (retryAttempt > 0) {
                             sleep 60
@@ -39,7 +42,7 @@ node('docker_build') {
                         mkdir ${PW_REPOSITORY}
                         cd ${PW_REPOSITORY}
                         git init
-                        git remote add origin ssh://git@git.parallelwireless.net:7999/tool/uniperf.git
+                        git remote add origin ${mirror}
                         git fetch
                         """
                     } 
@@ -67,8 +70,7 @@ node('docker_build') {
                     ])
                     
                     sh("git checkout -b integ/${branch_name}")
-                    sh("git branch --set-upstream-to=origin/integ/${branch_name} integ/${branch_name}")
-                    sh("git pull")
+                    sh("git show-branch remotes/origin/integ/${branch_name} && git branch --set-upstream-to=origin/integ/${branch_name} integ/${branch_name} && git pull")
                     sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${commit_hash}\"/' --in-place manifest.json") 
                     sh("git commit -m 'tag-update commitID auto upgrade' manifest.json")
                     sh("git push --set-upstream origin integ/${branch_name}")
