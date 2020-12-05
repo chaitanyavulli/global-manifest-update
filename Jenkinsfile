@@ -29,7 +29,7 @@ node('docker_build') {
              stage('Fetching Code') {
                 dir("${verCode}") {
                     def retryAttempt = 0
-                    def mirror = git_remotes(PW_REPOSITORY)
+                    def mirror = git_remotes(${PW_REPOSITORY})
                     println mirror
                     retry(2) {
                         if (retryAttempt > 0) {
