@@ -21,13 +21,16 @@ node('docker_build') {
         def verCode = UUID.randomUUID().toString()
 
         notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
-        
-        def short_hash
-        def branch_name
+
+        def git_remotes = ['uniperf': 'ssh://git@git.parallelwireless.net:7999/tool/uniperf.git']
+        def ci_tag = "ci-${PW_REPOSITORY}-${PW_BRANCH}-${NEW_COMMIT_HASH}"
+        println ci_tag
         try {
              stage('Fetching Code') {
                 dir("${verCode}") {
                     def retryAttempt = 0
+                    def mirror = git_remotes[PW_REPOSITORY]
+                    println mirror
                     retry(2) {
                         if (retryAttempt > 0) {
                             sleep 60
@@ -39,17 +42,12 @@ node('docker_build') {
                         mkdir ${PW_REPOSITORY}
                         cd ${PW_REPOSITORY}
                         git init
-                        git remote add origin ssh://git@git.parallelwireless.net:7999/tool/uniperf.git
+                        git remote add origin ${mirror}
                         git fetch
+                        git tag -a ${ci_tag} -m "Automated Tag" ${NEW_COMMIT_HASH}
+                        git push origin --tags
                         """
                     } 
-                }
-                dir("${verCode}/${repository_slug}/") {
-                    branch_name = sh (script: "git branch --contains ${PW_BRANCH} -a | tail -n 1 | sed 's/.*remotes\\/origin\\///'",returnStdout: true).trim()
-                    sh (script: "git fetch --depth 2 origin ${NEW_COMMIT_HASH}")
-                    sh (script: "git checkout FETCH_HEAD")
-                    commit_hash = sh (script: 'git rev-parse HEAD',returnStdout: true).trim()
-                    println branch_name
                 }
             }
         
@@ -66,12 +64,11 @@ node('docker_build') {
                         userRemoteConfigs: [[url: 'ssh://git@git.parallelwireless.net:7999/cd/integrated-packaging.git']]
                     ])
                     
-                    sh("git checkout -b integ/${branch_name}")
-                    sh("git branch --set-upstream-to=origin/integ/${branch_name} integ/${branch_name}")
-                    sh("git pull")
-                    sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${commit_hash}\"/' --in-place manifest.json") 
+                    sh("git checkout -b integ/${PW_BRANCH}")
+                    sh("git show-branch remotes/origin/integ/${PW_BRANCH} && git branch --set-upstream-to=origin/integ/${PW_BRANCH} integ/${PW_BRANCH} && git pull")
+                    sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json") 
                     sh("git commit -m 'tag-update commitID auto upgrade' manifest.json")
-                    sh("git push --set-upstream origin integ/${branch_name}")
+                    sh("git push --set-upstream origin integ/${PW_BRANCH}")
                 }
             }
             
@@ -84,7 +81,6 @@ node('docker_build') {
         finally {
             cleanWs()
             notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
-            notifySuccessful()
         }
     }
 }
