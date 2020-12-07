@@ -64,11 +64,11 @@ node('docker_build') {
                         userRemoteConfigs: [[url: 'ssh://git@git.parallelwireless.net:7999/cd/integrated-packaging.git']]
                     ])
                     
-                    sh("git checkout -b integ/${branch_name}")
-                    sh("git show-branch remotes/origin/integ/${branch_name} && git branch --set-upstream-to=origin/integ/${branch_name} integ/${branch_name} && git pull")
-                    sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${commit_hash}\"/' --in-place manifest.json") 
+                    sh("git checkout -b integ/${PW_BRANCH}")
+                    sh("git show-branch remotes/origin/integ/${PW_BRANCH} && git branch --set-upstream-to=origin/integ/${PW_BRANCH} integ/${PW_BRANCH} && git pull")
+                    sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json") 
                     sh("git commit -m 'tag-update commitID auto upgrade' manifest.json")
-                    sh("git push --set-upstream origin integ/${branch_name}")
+                    sh("git push --set-upstream origin integ/${PW_BRANCH}")
                 }
             }
             
