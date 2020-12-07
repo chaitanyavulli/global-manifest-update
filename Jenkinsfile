@@ -23,8 +23,8 @@ node('docker_build') {
         notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
 
         def git_remotes = ['uniperf': 'ssh://git@git.parallelwireless.net:7999/tool/uniperf.git']
-        def short_hash
-        def branch_name
+        def ci_tag = "ci-${PW_REPOSITORY}-${PW_BRANCH}-${PW_REPOSITORY}"
+        println ci_tag
         try {
              stage('Fetching Code') {
                 dir("${verCode}") {
@@ -44,15 +44,10 @@ node('docker_build') {
                         git init
                         git remote add origin ${mirror}
                         git fetch
+                        git tag -a ${ci_tag} -m "Automated Tag" ${NEW_COMMIT_HASH}
+                        git push origin --tags
                         """
                     } 
-                }
-                dir("${verCode}/${repository_slug}/") {
-                    branch_name = sh (script: "git branch --contains ${PW_BRANCH} -a | tail -n 1 | sed 's/.*remotes\\/origin\\///'",returnStdout: true).trim()
-                    sh (script: "git fetch --depth 2 origin ${NEW_COMMIT_HASH}")
-                    sh (script: "git checkout FETCH_HEAD")
-                    commit_hash = sh (script: 'git rev-parse HEAD',returnStdout: true).trim()
-                    println branch_name
                 }
             }
         
