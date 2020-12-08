@@ -23,7 +23,7 @@ node('docker_build') {
         notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
 
         def git_remotes = ['uniperf': 'ssh://git@git.parallelwireless.net:7999/tool/uniperf.git']
-        def ci_tag = "ci-${PW_REPOSITORY}-${PW_BRANCH}-${NEW_COMMIT_HASH[1..10]}"
+        def ci_tag = "ci-${PW_REPOSITORY}-${PW_BRANCH}-${NEW_COMMIT_HASH[0..9]}"
         println ci_tag
         try {
              stage('Fetching Code') {
