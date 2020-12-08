@@ -22,7 +22,23 @@ node('docker_build') {
 
         notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
 
-        def git_remotes = ['uniperf': 'ssh://git@git.parallelwireless.net:7999/tool/uniperf.git']
+        def git_remotes = [
+            'access-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/access-product-packaging.git',
+            'core': 'ssh://git@git.parallelwireless.net:7999/cd/core.git',
+            'nrtric': 'ssh://git@git.parallelwireless.net:7999/cd/cloudapps.git',
+            'rt-monitoring': 'ssh://git@git.parallelwireless.net:7999/da/rt-monitoring.git',
+            'uniperf': 'ssh://git@git.parallelwireless.net:7999/tool/uniperf.git',
+            'core-stacks': 'ssh://git@git.parallelwireless.net:7999/cd/core-stacks.git',
+            '2g-stack': 'ssh://git@git.parallelwireless.net:7999/cd/2g-stack.git',
+            'pnf-vnf': 'ssh://git@git.parallelwireless.net:7999/cd/pnf-vnf.git',
+            'core-stacks-phy': 'ssh://git@git.parallelwireless.net:7999/cd/core-stacks-phy.git',
+            'vru-4g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-4g-phy.git',
+            'bbpms_bsp': 'ssh://git@git.parallelwireless.net:7999/bsp/bbpms_bsp.git',
+            'vru-2g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-2g-phy.git',
+            'vru-3g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-3g-phy.git',
+            'nodeh': 'ssh://git@git.parallelwireless.net:7999/cd/nodeh.git',
+            'cws-rrh': 'ssh://git@git.parallelwireless.net:7999/cd/cws-rrh.git'
+            ]
         def ci_tag = "ci-${PW_REPOSITORY}-${PW_BRANCH}-${NEW_COMMIT_HASH[0..9]}"
         println ci_tag
         try {
