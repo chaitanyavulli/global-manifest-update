@@ -56,24 +56,25 @@ node('docker_build') {
                             sleep 60
                         }
                         retryAttempt = retryAttempt + 1
+                        def remotes = manifest_map[PW_REPOSITORY]
                         remotes.each{remote ->
                             mirror= git_remotes[remote]
-                        }
-                        sh """
-                        pwd
-                        rm -rf ${remote}
-                        mkdir ${remote}
-                        cd ${remote}
-                        git init
-                        git remote add origin ${mirror}
-                        git fetch
-                        git checkout -b integ/${PW_BRANCH}
-                        git pull
-                        sed -e 's/"${PW_REPOSITORY}": ".*"/"${PW_REPOSITORY}": "${NEW_COMMIT_HASH}"/' --in-place manifest.json
-                        git commit -m 'tag-update commitID auto upgrade' manifest.json
-                        git push --set-upstream origin integ/${PW_BRANCH}
-                        """
-                    } 
+                            sh """
+                            pwd
+                            rm -rf ${remote}
+                            mkdir ${remote}
+                            cd ${remote}
+                            git init
+                            git remote add origin ${mirror}
+                            git fetch
+                            git checkout -b integ/${PW_BRANCH}
+                            git pull
+                            sed -e 's/"${PW_REPOSITORY}": ".*"/"${PW_REPOSITORY}": "${NEW_COMMIT_HASH}"/' --in-place manifest.json
+                            git commit -m 'tag-update commitID auto upgrade' manifest.json
+                            git push --set-upstream origin integ/${PW_BRANCH}
+                            """
+                        } 
+                    }
                 }
             }
             currentBuild.result = 'SUCCESS'
