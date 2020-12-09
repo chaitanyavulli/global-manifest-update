@@ -22,31 +22,35 @@ node('docker_build') {
 
         notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
 
+        def manifest_map = [
+            'access-product-packaging': ['integrated-packaging'],
+            'core': ['access-product-packaging','integrated-packaging'],
+            'nrtric': ['integrated-packaging'],
+            'rt-monitoring': ['integrated-packaging'],
+            'uniperf': ['integrated-packaging'],
+            'core-stacks': ['access-product-packaging'],
+            '2g-stack': ['access-product-packaging'],
+            'pnf-vnf': ['access-product-packaging'],
+            'core-stacks-phy': ['access-product-packaging'],
+            'vru-4g-phy': ['access-product-packaging'],
+            'bbpms_bsp': ['access-product-packaging'],
+            'vru-2g-phy': ['access-product-packaging'],
+            'vru-3g-phy': ['access-product-packaging'],
+            'nodeh': ['access-product-packaging'],
+            'cws-rrh': ['access-product-packaging']
+            ]
+
         def git_remotes = [
             'access-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/access-product-packaging.git',
-            'core': 'ssh://git@git.parallelwireless.net:7999/cd/core.git',
-            'nrtric': 'ssh://git@git.parallelwireless.net:7999/cd/cloudapps.git',
-            'rt-monitoring': 'ssh://git@git.parallelwireless.net:7999/da/rt-monitoring.git',
-            'uniperf': 'ssh://git@git.parallelwireless.net:7999/tool/uniperf.git',
-            'core-stacks': 'ssh://git@git.parallelwireless.net:7999/cd/core-stacks.git',
-            '2g-stack': 'ssh://git@git.parallelwireless.net:7999/cd/2g-stack.git',
-            'pnf-vnf': 'ssh://git@git.parallelwireless.net:7999/cd/pnf-vnf.git',
-            'core-stacks-phy': 'ssh://git@git.parallelwireless.net:7999/cd/core-stacks-phy.git',
-            'vru-4g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-4g-phy.git',
-            'bbpms_bsp': 'ssh://git@git.parallelwireless.net:7999/bsp/bbpms_bsp.git',
-            'vru-2g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-2g-phy.git',
-            'vru-3g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-3g-phy.git',
-            'nodeh': 'ssh://git@git.parallelwireless.net:7999/cd/nodeh.git',
-            'cws-rrh': 'ssh://git@git.parallelwireless.net:7999/cd/cws-rrh.git'
+            'integrated-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/integrated-packaging.git'
             ]
-        def ci_tag = "ci-${PW_REPOSITORY}-${PW_BRANCH}-${NEW_COMMIT_HASH[0..9]}"
-        println ci_tag
+
         try {
-             stage('Fetching Code') {
+             stage('Update Manifest Files') {
                 dir("${verCode}") {
                     def retryAttempt = 0
-                    def mirror = git_remotes[PW_REPOSITORY]
-                    println mirror
+                    def remotes = manifest_map[PW_REPOSITORY]
+                    println remotes[0]
                     retry(2) {
                         if (retryAttempt > 0) {
                             sleep 60
