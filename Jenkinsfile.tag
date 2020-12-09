@@ -75,7 +75,7 @@ node('docker_build') {
         stage('Trigger Downstream Job Manifest File Update') {
                 dir("${verCode}/${PW_REPOSITORY}") {
                     if ( trigger_downstream_job == true ) {
-                     build job: '', parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(push_changes_0_new_target_hash)), string(name: 'repository_slug', value: String.valueOf(repository_slug))], propagate: false, wait: false
+                     build job: 'manifest-file-update', parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(push_changes_0_new_target_hash)), string(name: 'repository_slug', value: String.valueOf(repository_slug))], propagate: false, wait: false
                     }
                 }
             }
