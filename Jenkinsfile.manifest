@@ -68,6 +68,7 @@ node('docker_build') {
                             git remote add origin ${mirror}
                             git fetch
                             git checkout -b integ/${PW_BRANCH}
+                            git pull origin integ/${PW_BRANCH}
                             sed -e 's/"${PW_REPOSITORY}": ".*"/"${PW_REPOSITORY}": "${NEW_COMMIT_HASH}"/' --in-place manifest.json
                             git commit -m 'tag-update commitID auto upgrade' manifest.json
                             git push --set-upstream origin integ/${PW_BRANCH}
