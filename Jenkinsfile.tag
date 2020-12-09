@@ -22,6 +22,7 @@ node('docker_build') {
 
         notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
 
+        def trigger_downstream_job = true
         def git_remotes = [
             'access-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/access-product-packaging.git',
             'core': 'ssh://git@git.parallelwireless.net:7999/cd/core.git',
@@ -42,7 +43,7 @@ node('docker_build') {
         def ci_tag = "ci-${PW_REPOSITORY}-${PW_BRANCH}-${NEW_COMMIT_HASH[0..9]}"
         println ci_tag
         try {
-             stage('Fetching Code') {
+             stage('Fetch Code') {
                 dir("${verCode}") {
                     def retryAttempt = 0
                     def mirror = git_remotes[PW_REPOSITORY]
@@ -60,31 +61,23 @@ node('docker_build') {
                         git init
                         git remote add origin ${mirror}
                         git fetch
-                        git tag -a ${ci_tag} -m "Automated Tag" ${NEW_COMMIT_HASH}
-                        git push origin --tags
                         """
                     } 
                 }
             }
         
-        stage('Change Packaging Repo') {
-                dir("${verCode}/packaging-repo") {
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: 'develop']],
-                        browser: [$class: 'BitbucketWeb',
-                        repoUrl: 'https://git.parallelwireless.net/projects/CD/repos/integrated-packaging/browse'],
-                        doGenerateSubmoduleConfigurations: false,
-                        extensions: [],
-                        submoduleCfg: [],
-                        userRemoteConfigs: [[url: 'ssh://git@git.parallelwireless.net:7999/cd/integrated-packaging.git']]
-                    ])
-                    
-                    sh("git checkout -b integ/${PW_BRANCH}")
-                    sh("git show-branch remotes/origin/integ/${PW_BRANCH} && git branch --set-upstream-to=origin/integ/${PW_BRANCH} integ/${PW_BRANCH} && git pull")
-                    sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json") 
-                    sh("git commit -m 'tag-update commitID auto upgrade' manifest.json")
-                    sh("git push --set-upstream origin integ/${PW_BRANCH}")
+        stage('Trigger Downstream Job Manifest File Update') {
+                dir("${verCode}/${PW_REPOSITORY}") {
+                    if ( trigger_downstream_job == true ) {
+                     build job: '', parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(push_changes_0_new_target_hash)), string(name: 'repository_slug', value: String.valueOf(repository_slug))], propagate: false, wait: false
+                    }
+                }
+            }
+
+        stage('Tag Git Repo') {
+                dir("${verCode}/${PW_REPOSITORY}") {
+                    sh("git tag -a ${ci_tag} -m "Automated Tag" ${NEW_COMMIT_HASH}")
+                    sh("git push origin --tags")
                 }
             }
             
