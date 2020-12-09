@@ -80,13 +80,6 @@ node('docker_build') {
                 }
             }
 
-        stage('Tag Git Repo') {
-                dir("${verCode}/${PW_REPOSITORY}") {
-                    sh("git tag -a ${ci_tag} -m \"Automated Tag\" ${NEW_COMMIT_HASH}")
-                    sh("git push origin --tags")
-                }
-            }
-            
             currentBuild.result = 'SUCCESS'
         }
         catch (Exception Error) {
