@@ -69,7 +69,9 @@ node('docker_build') {
         stage('Tag Git Repo') {
                 dir("${verCode}/${PW_REPOSITORY}") {
                     retValue = sh(returnStatus:true, script: "git tag -a ${ci_tag} -m \"Automated Tag\" ${NEW_COMMIT_HASH}")
-                    println retValue
+                    if (retValue == 128){
+                        println "Tag already present"
+                    }
                     sh(returnStatus:true, script: "git push origin --tags")
                 }
             }
