@@ -44,6 +44,8 @@ node('docker_build') {
             'access-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/access-product-packaging.git',
             'integrated-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/integrated-packaging.git'
             ]
+        
+        def mirror = ''
 
         try {
              stage('Update Manifest Files') {
@@ -51,7 +53,7 @@ node('docker_build') {
                     def retryAttempt = 0
                     def remotes = manifest_map[PW_REPOSITORY]
                     remotes.each{remote ->
-                        println git_remotes[remote]
+                        mirror= git_remotes[remote]
                     }
                     retry(2) {
                         if (retryAttempt > 0) {
