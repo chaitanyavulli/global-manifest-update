@@ -68,8 +68,11 @@ node('docker_build') {
         
         stage('Tag Git Repo') {
                 dir("${verCode}/${PW_REPOSITORY}") {
-                    sh("git tag -a ${ci_tag} -m \"Automated Tag\" ${NEW_COMMIT_HASH}")
-                    sh("git push origin --tags")
+                    retValue = sh(returnStatus:true, script: "git tag -a ${ci_tag} -m \"Automated Tag\" ${NEW_COMMIT_HASH}")
+                    if (retValue == 128){
+                        println "Tag already present"
+                    }
+                    sh(returnStatus:true, script: "git push origin --tags")
                 }
             }
         stage('Trigger Downstream Job Manifest File Update') {
