@@ -73,6 +73,7 @@ node('docker_build') {
                                 retValue = sh(returnStatus: true, script: "pwd")
                                 retValue = sh(returnStatus: true, script: "git checkout -b integ/${PW_BRANCH}")
                                 retValue = sh(returnStatus: true, script: "git pull origin integ/${PW_BRANCH}")
+                                println retValue
                                 if (retValue == 128){
                                     println "Branch not present. Pulling from develop"
                                     retValue = sh(returnStatus: true, script: "git pull origin develop")
