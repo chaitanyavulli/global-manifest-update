@@ -51,51 +51,31 @@ node('docker_build') {
              stage('Update Manifest Files') {
                 dir("${verCode}") {
                     def retryAttempt = 0
-                    def remotes = manifest_map[PW_REPOSITORY]
-                    remotes.each{remote ->
-                        mirror= git_remotes[remote]
-                    }
                     retry(2) {
                         if (retryAttempt > 0) {
                             sleep 60
                         }
                         retryAttempt = retryAttempt + 1
-                        milestone label: 'develop'
+                        remotes.each{remote ->
+                            mirror= git_remotes[remote]
+                        }
                         sh """
-                        rm -rf ${PW_REPOSITORY}
-                        mkdir ${PW_REPOSITORY}
-                        cd ${PW_REPOSITORY}
+                        pwd
+                        rm -rf ${remote}
+                        mkdir ${remote}
+                        cd ${remote}
                         git init
                         git remote add origin ${mirror}
                         git fetch
-                        git tag -a ${ci_tag} -m "Automated Tag" ${NEW_COMMIT_HASH}
-                        git push origin --tags
+                        git checkout -b integ/${PW_BRANCH}
+                        git pull
+                        sed -e 's/"${PW_REPOSITORY}": ".*"/"${PW_REPOSITORY}": "${NEW_COMMIT_HASH}"/' --in-place manifest.json
+                        git commit -m 'tag-update commitID auto upgrade' manifest.json
+                        git push --set-upstream origin integ/${PW_BRANCH}
                         """
                     } 
                 }
             }
-        
-        stage('Change Packaging Repo') {
-                dir("${verCode}/packaging-repo") {
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: 'develop']],
-                        browser: [$class: 'BitbucketWeb',
-                        repoUrl: 'https://git.parallelwireless.net/projects/CD/repos/integrated-packaging/browse'],
-                        doGenerateSubmoduleConfigurations: false,
-                        extensions: [],
-                        submoduleCfg: [],
-                        userRemoteConfigs: [[url: 'ssh://git@git.parallelwireless.net:7999/cd/integrated-packaging.git']]
-                    ])
-                    
-                    sh("git checkout -b integ/${PW_BRANCH}")
-                    sh("git show-branch remotes/origin/integ/${PW_BRANCH} && git branch --set-upstream-to=origin/integ/${PW_BRANCH} integ/${PW_BRANCH} && git pull")
-                    sh("sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json") 
-                    sh("git commit -m 'tag-update commitID auto upgrade' manifest.json")
-                    sh("git push --set-upstream origin integ/${PW_BRANCH}")
-                }
-            }
-            
             currentBuild.result = 'SUCCESS'
         }
         catch (Exception Error) {
