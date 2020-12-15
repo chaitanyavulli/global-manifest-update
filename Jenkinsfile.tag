@@ -15,6 +15,8 @@ node('docker_build') {
     def PW_REPOSITORY = "${repository_slug}"
 
     timestamps {
+        timeout(time: 3, unit: 'HOURS') {
+
         currentBuild.displayName = "${BUILD_NUMBER}:${repository_slug}:${PW_BRANCH}"
         println currentBuild.displayName
         currentBuild.description = "Build ${repository_slug} on branch: ${PW_BRANCH}"
@@ -94,6 +96,7 @@ node('docker_build') {
             notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
         }
     }
+  }
 }
 
 def notifySuccessful() {
