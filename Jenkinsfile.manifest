@@ -126,10 +126,10 @@ node('docker_build') {
                                                                 ]
                                                       }
                                    }
-EOF
+                                EOF
 
                                 #cp datreq.json datareq.json
-                                modified_branch=`echo integ/${PW_BRANCH}|sed -e "s/\"//%/g"`
+                                modified_branch=`echo integ/"${PW_BRANCH}"|sed -e "s/\"//%/g"`
 
                                 sed -i "s/sourcepullbranch/modified_branch/g" /tmp/process_id_datareq.json
                                 sed -i "s/%/\"//g" /tmp/process_id_datareq.json
