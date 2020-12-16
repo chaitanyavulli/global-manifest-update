@@ -46,8 +46,14 @@ node('docker_build') {
             'access-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/access-product-packaging.git',
             'integrated-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/integrated-packaging.git'
             ]
+
+        def pull_remote = [ 
+            'access-product-packaging' 	: 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/access-product-packaging/pull-requests',
+            'integrated-packaging' 	: 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/integrated-packaging/pull-requests'
+            ]
         
         def mirror = ''
+        def pull_api = ''
 
         try {
              stage('Update Manifest Files') {
@@ -61,6 +67,7 @@ node('docker_build') {
                         def remotes = manifest_map[PW_REPOSITORY]
                         remotes.each{remote ->
                             mirror= git_remotes[remote]
+                            pull_api = pull_remote[remote]
                             sh """
                             pwd
                             rm -rf ${remote}
@@ -83,6 +90,57 @@ node('docker_build') {
                                 sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
                                 sh(returnStatus: true, script: "git commit -m 'tag-update commitID auto upgrade' manifest.json")
                                 sh(returnStatus: true, script: "git push --set-upstream origin integ/${PW_BRANCH}")
+                                sh """                                
+                                process_id=`cat /dev/urandom | tr -dc '0-9' | fold -w 256 | head -n 1 | sed -e 's/^0*//' | head --bytes 10`
+                                cat > /tmp/${process_id}_datareq.json <<EOF
+
+                                {
+                                   "title": "Manifest",
+                                   "description": "Pull Requested has been created using Manifest from integ/${PW_BRANCH} to develop",
+                                   "state": "OPEN",
+                                   "open": true,
+                                   "closed": false,
+                                   "fromRef": {
+                                                 "id": "sourcepullbranch",
+                                                 "repository": {
+                                                                  "slug": "${remote}",
+                                                                  "name": null,
+                                                                  "project": {
+                                                                                "key": "CD"
+                                                                             }
+                                                               }
+                                             },
+                                   "toRef": {
+                                              "id": "develop",
+                                               "repository": {
+                                                                "slug": "${remote}",
+                                                                "name": null,
+                                                                "project": {
+                                                                             "key": "CD"
+                                                                           }
+                                                             }
+                                             },
+                                             "locked": false,
+                                             "links": {
+                                                        "self": [
+                                                                  null
+                                                                ]
+                                                      }
+                                 }
+
+                                 EOF
+
+                                 #cp datreq.json datareq.json
+                                 modified_branch=`echo integ/${PW_BRANCH}|sed -e "s/\//%/g"`
+
+                                 sed -i "s/sourcepullbranch/$modified_branch/g" /tmp/${process_id}_datareq.json
+                                 sed -i "s/%/\//g" /tmp/${process_id}_datareq.json
+
+                                curl -s -u pw-build:builtit4u! -H "Content-Type: application/json" ${pull_url} -X POST --data @/tmp/${process_id}_datareq.json >/tmp/${process_id}_curl.log 2>&1
+
+                                echo "Pull request created: "
+                                
+                                """
                             }
                         } 
                     }
@@ -112,3 +170,4 @@ def notifySuccessful() {
          recipientProviders: [developers(), requestor()]
     )
 }
+
