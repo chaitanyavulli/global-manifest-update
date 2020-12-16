@@ -92,7 +92,7 @@ node('docker_build') {
                                 sh(returnStatus: true, script: "git push --set-upstream origin integ/${PW_BRANCH}")
                                 sh """                                
                                 process_id=`cat /dev/urandom | tr -dc '0-9' | fold -w 256 | head -n 1 | sed -e 's/^0*//' | head --bytes 10`
-                                cat > /tmp/${process_id}_datareq.json <<EOF
+                                cat > /tmp/process_id_datareq.json <<EOF
 
                                 {
                                    "title": "Manifest",
@@ -136,7 +136,7 @@ node('docker_build') {
                                  sed -i "s/sourcepullbranch/$modified_branch/g" /tmp/${process_id}_datareq.json
                                  sed -i "s/%/\"//g" /tmp/${process_id}_datareq.json
 
-                                curl -s -u pw-build:builtit4u! -H "Content-Type: application/json" ${pull_url} -X POST --data @/tmp/${process_id}_datareq.json >/tmp/${process_id}_curl.log 2>&1
+                                curl -s -u pw-build:builtit4u! -H "Content-Type: application/json" ${pull_url} -X POST --data @/tmp/process_id_datareq.json >/tmp/process_id_curl.log 2>&1
 
                                 echo "Pull request created: "
                                 
