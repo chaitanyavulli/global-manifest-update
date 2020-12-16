@@ -91,8 +91,8 @@ node('docker_build') {
                                 sh(returnStatus: true, script: "git commit -m 'tag-update commitID auto upgrade' manifest.json")
                                 sh(returnStatus: true, script: "git push --set-upstream origin integ/${PW_BRANCH}")
                                 sh """                                
-                                process_id="cat /dev/urandom | tr -dc '0-9' | fold -w 256 | head -n 1 | sed -e 's/^0*//' | head --bytes 10"
-                                cat > /tmp/process_id_datareq.json <<EOF
+                                process_id=`cat /dev/urandom | tr -dc '0-9' | fold -w 256 | head -n 1 | sed -e 's/^0*//' | head --bytes 10`
+                                cat > /tmp/process_id_datareq.json <<`EOF'
                                    {
                                       "title": "Manifest",
                                       "description": "Pull Requested has been created using Manifest from integ/${PW_BRANCH} to develop",
