@@ -74,6 +74,7 @@ node('docker_build') {
                             git remote add origin ssh://git@git.parallelwireless.net:7999/cd/global-packaging.git
                             git fetch
                             git checkout -b develop
+                            git pull origin develop
                             """
                    }
                }
