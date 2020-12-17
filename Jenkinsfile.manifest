@@ -75,6 +75,8 @@ node('docker_build') {
                             git fetch
                             git checkout -b develop
                             """
+                   }
+               }
              }
              stage('Update Manifest Files') {
                 dir("${verCode}") {
