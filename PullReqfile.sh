@@ -57,7 +57,7 @@ modified_branch=`echo "$integ_branch"|sed -e "s/\//%/g"`
 sed -i "s/sourcepullbranch/$modified_branch/g" /tmp/${process_id}_datareq.json
 sed -i "s/%/\//g" /tmp/${process_id}_datareq.json
 
-echo curl -s -u pw-build:builtit4u! -H "Content-Type: application/json" $pull_url -X POST --data @/tmp/${process_id}_datareq.json
-
+dump = curl -s -u pw-build:builtit4u! -H "Content-Type: application/json" $pull_url -X POST --data @/tmp/${process_id}_datareq.json
+echo $dump
 
 echo "Pull request created: "
