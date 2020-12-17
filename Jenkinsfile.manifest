@@ -56,6 +56,26 @@ node('docker_build') {
         def pull_api = ''
 
         try {
+
+             stage ('Clone'){
+               dir("${verCode}") {
+                    def retryAttempt = 0
+                    retry(2) {
+                        if (retryAttempt > 0) {
+                            sleep 60
+                        }
+                        retryAttempt = retryAttempt + 1
+                            sh """
+                            pwd
+                            rm -rf global-packaging
+                            mkdir global-packaging
+                            cd global-packaging
+                            git init
+                            git remote add origin ssh://git@git.parallelwireless.net:7999/cd/global-packaging.git
+                            git fetch
+                            git checkout -b develop
+                            """
+             }
              stage('Update Manifest Files') {
                 dir("${verCode}") {
                     def retryAttempt = 0
@@ -90,7 +110,7 @@ node('docker_build') {
                                 sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
                                 sh(returnStatus: true, script: "git commit -m 'tag-update commitID auto upgrade' manifest.json")
                                 sh(returnStatus: true, script: "git push --set-upstream origin integ/${PW_BRANCH}")
-                                sh(returnStatus: true, script: "sh ./global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop")
+                                sh(returnStatus: true, script: "sh ../global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop")
                                 //sh "sh ./global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop"
 
                             }
