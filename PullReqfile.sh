@@ -24,7 +24,7 @@ cat > /tmp/${process_id}_datareq.json <<EOF
     "fromRef": {
         "id": "sourcepullbranch",
         "repository": {
-            "slug": $src_slug,
+            "slug": "$src_slug",
             "name": null,
             "project": {
                 "key": "CD"
@@ -32,9 +32,9 @@ cat > /tmp/${process_id}_datareq.json <<EOF
          }
     },
     "toRef": {
-        "id": $feat_branch",
+        "id": "$feat_branch",
         "repository": {
-            "slug": $dst_slug,
+            "slug": "$dst_slug",
             "name": null,
             "project": {
                 "key": "CD"
