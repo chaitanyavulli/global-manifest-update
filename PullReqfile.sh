@@ -3,6 +3,8 @@
 integ_branch=$1
 feat_branch=$2
 pull_url=$3
+src_slug=$4
+dst_slug=$5
 
 echo $integ_branch
 echo $feat_branch
