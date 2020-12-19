@@ -128,12 +128,9 @@ node('docker_build') {
                                 //}
                                 println props 
                                 println props["errors"]
+                                def dump = props["errors"]
+                                println dump.size()
                                  
-                                for(Object o: props["errors"]){
-                                 if ( o instanceof JSONObject ) {
-                                    parse((JSONObject)o);
-                                  }
-                                }                                
                                 println "---------"
                                 //sh "sh ./global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop"
 
