@@ -122,7 +122,7 @@ node('docker_build') {
                                 
                                 //result.accumulate("json", pull_req.toJSON());
                                 //def object = jsonSlurper.parseText(pull_req)
-                                println props["errors.existingPullRequest.links"]
+                                println props["errors[0].existingPullRequest.links"]
                                 println "---------"
                                 //sh "sh ./global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop"
 
