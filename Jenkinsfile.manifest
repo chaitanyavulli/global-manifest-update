@@ -125,7 +125,7 @@ node('docker_build') {
                                 //    echo "Walked through key $key and value $value"
                                 //}
                                 println props 
-                                println props["errors"].get("message")
+                                println props["errors"]
                                 println "---------"
                                 //sh "sh ./global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop"
 
