@@ -127,7 +127,13 @@ node('docker_build') {
                                 //    echo "Walked through key $key and value $value"
                                 //}
                                 println props 
-                                println props["errors"]  
+                                println props["errors"]
+                                 
+                                for(Object o: props["errors"]){
+                                 if ( o instanceof JSONObject ) {
+                                    parse((JSONObject)o);
+                                  }
+                                }                                
                                 println "---------"
                                 //sh "sh ./global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop"
 
