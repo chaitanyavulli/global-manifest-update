@@ -6,12 +6,6 @@ pull_url=$3
 src_slug=$4
 dst_slug=$5
 
-echo $integ_branch
-echo $feat_branch
-echo $pull_url
-echo $src_slug
-echo $dst_slug
-
 process_id=`cat /dev/urandom | tr -dc '0-9' | fold -w 256 | head -n 1 | sed -e 's/^0*//' | head --bytes 10`
 cat > /tmp/${process_id}_datareq.json <<EOF
 
@@ -60,4 +54,4 @@ sed -i "s/%/\//g" /tmp/${process_id}_datareq.json
 curl -s -u pw-build:builtit4u! -H "Content-Type: application/json" $pull_url -X POST --data @/tmp/${process_id}_datareq.json &
 #> /tmp/${process_id}_curl.log 2>&1
 #cat /tmp/${process_id}_curl.log
-echo "-----------------------"
+#echo "-----------------------"
