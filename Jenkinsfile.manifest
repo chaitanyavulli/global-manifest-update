@@ -130,7 +130,7 @@ node('docker_build') {
                                 println props["errors"]
                                 def dump = props["errors"]
                                 println dump.size()
-                                 
+                                dump.each { println "Hex Code: $it.key = Color Name: $it.value" }
                                 println "---------"
                                 //sh "sh ./global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop"
 
