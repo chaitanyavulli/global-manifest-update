@@ -126,6 +126,11 @@ node('docker_build') {
                                 //}
                                 //println props 
                                 println props["errors"]
+                                def jsonarray = props["errors"]
+                                for ( int i = 0 ; i < 5; i++)
+                                {
+                                   println jsonarray.getJSONObject(i) 
+                                }       
                                 println "---------"
                                 //sh "sh ./global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop"
 
