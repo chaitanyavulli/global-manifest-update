@@ -118,11 +118,10 @@ node('docker_build') {
 				sh(returnStatus: true, script: "git push --set-upstream origin integ/${PW_BRANCH}")
 				pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop ${pull_api} ${remote} ${remote}").trim()
                                 //println pull_req
-                                //def props = readJSON text:pull_req.toString(), returnPojo: true 
-                                def props = readJSON text: '{ "key": null, "a": "b" }', returnPojo: true
+                                def props = readJSON text:pull_req.toString(), returnPojo: true 
                                 //result.accumulate("json", pull_req.toJSON());
                                 //def object = jsonSlurper.parseText(pull_req)
-                                props.each { key, value ->
+                                props["errors"].each { key, value ->
                                     echo "Walked through key $key and value $value"
                                 }
                                  
