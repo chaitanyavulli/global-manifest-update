@@ -56,6 +56,7 @@ node('docker_build') {
         def mirror = ''
         def pull_api = ''
         def pull_req = ''
+        def pull_list = []
         //def jsonSlurper = new JSONObject();
 
         try {
@@ -117,21 +118,9 @@ node('docker_build') {
                                 sh(returnStatus: true, script: "git commit -m 'tag-update commitID auto upgrade' manifest.json")
 				sh(returnStatus: true, script: "git push --set-upstream origin integ/${PW_BRANCH}")
 				pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop ${pull_api} ${remote} ${remote}").trim()
-                                //println pull_req
-                                //def props = readJSON text:pull_req.toString(), returnPojo: true 
-                                
                                 def props = readJSON text:pull_req.toString()
-                                //result.accumulate("json", pull_req.toJSON());
-                                //def object = jsonSlurper.parseText(pull_req)
-                                //props["errors"].each { key, value ->
-                                //    echo "Walked through key $key and value $value"
-                                //}
-                                println props 
-                                println props["errors"]
                                 println props.errors[0].existingPullRequest.links.self[0].href
-                                println "---------"
-                                //sh "sh ./global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop"
-
+                                pull_list.add(props.errors[0].existingPullRequest.links.self[0].href)
                             }
                         } 
                     }
@@ -145,18 +134,18 @@ node('docker_build') {
         }
         finally {
             cleanWs()
-            notifySuccessful()
+            notifySuccessful(pull_list)
             notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
         }
       }
     }
 }
 
-def notifySuccessful() {
+def notifySuccessful(pull_list) {
      emailext (
          attachLog: true,
          subject: "Manifest file updated",
-         body: "Manifest file updated ",
+         body: pull_list.toString(),
          mimeType: 'text/html',
          recipientProviders: [developers(), requestor()]
     )
