@@ -128,7 +128,7 @@ node('docker_build') {
                                 //}
                                 println props 
                                 println props["errors"]
-                                echo "dump : $(errors[0].existingPullRequest)"
+                                println props.errors[0].existingPullRequest
                                 def dump = props["errors"]
                                 println dump.size()
                                 println "---------"
