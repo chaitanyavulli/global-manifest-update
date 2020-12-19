@@ -1,6 +1,6 @@
 #!/user/bin/env groovy
 import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
-import net.sf.json.groovy.JsonSlurper
+import org.jenkinsci.plugins.pipeline.modeldefinition.parser.JSONParser
 /*
 plugins used in Jenkinsfile
 - Bitbucket Server Notifier (notifyBitbucket)
