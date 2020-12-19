@@ -115,8 +115,8 @@ node('docker_build') {
                                 sh(returnStatus: true, script: "git commit -m 'tag-update commitID auto upgrade' manifest.json")
 				sh(returnStatus: true, script: "git push --set-upstream origin integ/${PW_BRANCH}")
 				pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop ${pull_api} ${remote} ${remote}").trim()
-                                println "---------"
                                 println pull_req
+                                println "---------"
                                 //sh "sh ./global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop"
 
                             }
