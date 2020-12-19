@@ -121,11 +121,11 @@ node('docker_build') {
                                 def props = readJSON text:pull_req.toString(), returnPojo: true 
                                 //result.accumulate("json", pull_req.toJSON());
                                 //def object = jsonSlurper.parseText(pull_req)
-                                props["errors"].each { key, value ->
-                                    echo "Walked through key $key and value $value"
-                                }
+                                //props["errors"].each { key, value ->
+                                //    echo "Walked through key $key and value $value"
+                                //}
                                  
-                                //println props["errors.existingPullRequest"]
+                                println props["errors"]
                                 println "---------"
                                 //sh "sh ./global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop"
 
