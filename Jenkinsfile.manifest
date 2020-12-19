@@ -55,6 +55,7 @@ node('docker_build') {
         def mirror = ''
         def pull_api = ''
         def pull_req = ''
+        def jsonSlurper = new JsonSlurper()
 
         try {
 
@@ -116,6 +117,8 @@ node('docker_build') {
 				sh(returnStatus: true, script: "git push --set-upstream origin integ/${PW_BRANCH}")
 				pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop ${pull_api} ${remote} ${remote}").trim()
                                 println pull_req
+                                def object = jsonSlurper.parseText(pull_req)
+                                println object
                                 println "---------"
                                 //sh "sh ./global-packaging/PullReqfile.sh integ/${PW_BRANCH} develop"
 
