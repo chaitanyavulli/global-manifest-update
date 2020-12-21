@@ -154,7 +154,7 @@ def notifySuccessful(pull_list) {
      emailext (
          attachLog: true,
          subject: "Manifest file updated",
-         body: pull_list.toString(),
+         body: pull_list,
          mimeType: 'text/html',
          recipientProviders: [developers(), requestor()]
     )
