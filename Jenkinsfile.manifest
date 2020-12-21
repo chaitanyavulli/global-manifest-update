@@ -14,7 +14,7 @@ node('docker_build') {
     def PW_BRANCH = "${push_changes_0_new_name}"
     def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
     def PW_REPOSITORY = "${repository_slug}"
-    def INTEG_BRANCH = "integ/${PW_REPOSITORY}-${PW_BRANCH}"
+    def INTEG_BRANCH = "integ/${PW_REPOSITORY}/${PW_BRANCH}"
 
     timestamps {
         timeout(time: 3, unit: 'HOURS') {
