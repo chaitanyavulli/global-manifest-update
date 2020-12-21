@@ -119,12 +119,12 @@ node('docker_build') {
 				sh(returnStatus: true, script: "git push --set-upstream origin ${INTEG_BRANCH}")
 				pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} develop ${pull_api} ${remote} ${remote}").trim()
                                 println pull_req
-                                def props = readJSON text:pull_req.toString()
+                                def props = readJSON text:pull_req.toString(),returnPojo: true
 
                                 if ( props['errors'] != null )
                                    pull_list.add(props.errors[0].existingPullRequest.links.self[0].href)
                                 else 
-                                   pull_list.add(props.links.self[0].href)
+                                   println pull_list.add(props.links.self[0].href)
 
                                /// } else { 
                                //    println props.errors[0].existingPullRequest.links.self[0].href
