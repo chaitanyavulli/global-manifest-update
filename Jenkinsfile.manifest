@@ -117,7 +117,8 @@ node('docker_build') {
                                 sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
                                 sh(returnStatus: true, script: "git commit -m 'tag-update commitID auto upgrade' manifest.json")
 				sh(returnStatus: true, script: "git push --set-upstream origin ${INTEG_BRANCH}")
-				pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH}  develop ${pull_api} ${remote} ${remote}").trim()
+				pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} develop ${pull_api} ${remote} ${remote}").trim()
+                                println pull_req
                                 def props = readJSON text:pull_req.toString()
                                 println props.errors[0].existingPullRequest.links.self[0].href
                                 pull_list.add(props.errors[0].existingPullRequest.links.self[0].href)
