@@ -120,6 +120,7 @@ node('docker_build') {
 				pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} develop ${pull_api} ${remote} ${remote}").trim()
                                 println pull_req
                                 def props = readJSON text:pull_req.toString()
+                                println props.errors[0]
                                 println props.errors[0].existingPullRequest.links.self[0].href
                                 pull_list.add(props.errors[0].existingPullRequest.links.self[0].href)
                             }
