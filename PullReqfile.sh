@@ -53,5 +53,3 @@ sed -i "s/%/\//g" /tmp/${process_id}_datareq.json
 
 curl -s -u pw-build:builtit4u! -H "Content-Type: application/json" $pull_url -X POST --data @/tmp/${process_id}_datareq.json 
 #> /tmp/${process_id}_curl.log 2>&1
-#cat /tmp/${process_id}_curl.log
-#echo "-----------------------"
