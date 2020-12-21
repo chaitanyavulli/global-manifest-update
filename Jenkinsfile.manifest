@@ -121,11 +121,13 @@ node('docker_build') {
                                 println pull_req
                                 def props = readJSON text:pull_req.toString(),returnPojo: true
 
-                                if ( props['errors'] != null )
-                                   pull_list.add(props.errors[0].existingPullRequest.links.self[0].href)
-                                else 
-                                   println pull_list.add(props.links.self[0].href)
-
+                                if ( props['errors'] != null ){
+                                   println props.errors[0].existingPullRequest.links.self[0].href
+                                   pull_list.add(props.errors[0].existingPullRequest.links.self[0].href)                                   
+                                } else {
+                                   println props.links.self[0].href
+                                   pull_list.add(props.links.self[0].href)
+                                }
                                /// } else { 
                                //    println props.errors[0].existingPullRequest.links.self[0].href
                                //    pull_list.add(props.errors[0].existingPullRequest.links.self[0].href)
@@ -154,7 +156,7 @@ def notifySuccessful(pull_list) {
      emailext (
          attachLog: true,
          subject: "Manifest file updated",
-         body: pull_list,
+         body: pull_list.toString(),
          mimeType: 'text/html',
          recipientProviders: [developers(), requestor()]
     )
