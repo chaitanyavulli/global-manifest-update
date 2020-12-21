@@ -57,7 +57,7 @@ node('docker_build') {
         def mirror = ''
         def pull_api = ''
         def pull_req = ''
-        def pull_list = ''
+        def pull_list = []
 
         try {
 
