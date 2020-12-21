@@ -123,12 +123,10 @@ node('docker_build') {
 
                                 if ( props['errors'] != null ){
                                    println props.errors[0].existingPullRequest.links.self[0].href
-                                   pull_list + (props.errors[0].existingPullRequest.links.self[0].href)
-                                   //pull_list.add(props.errors[0].existingPullRequest.links.self[0].href)                                   
+                                   pull_list.add(props.errors[0].existingPullRequest.links.self[0].href)                                   
                                 } else {
                                    println props.links.self[0].href
-                                   pull_list + props.links.self[0].href
-                                   //pull_list.add(props.links.self[0].href)
+                                   pull_list.add(props.links.self[0].href)
                                 }
                             }
                         } 
