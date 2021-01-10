@@ -10,6 +10,15 @@ plugins used in Jenkinsfile
 */
 node('docker_build') {
 
+    properties([
+        parameters([
+            string(defaultValue: '', description: 'Branch Name:', name: 'push_changes_0_new_name', trim: true),
+            string(defaultValue: '', description: 'Repository Name', name: 'repository_slug', trim: true),
+            string(defaultValue: '', description: 'New Hash:', name: 'push_changes_0_new_target_hash', trim: true),
+            string(defaultValue: 'develop', description: 'For internal Use:', name: 'global-packaging-branch', trim: true),
+        ])
+    ])
+
     def PW_BRANCH = "${push_changes_0_new_name}"
     def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
     def PW_REPOSITORY = "${repository_slug}"
@@ -40,7 +49,8 @@ node('docker_build') {
             'vru-2g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-2g-phy.git',
             'vru-3g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-3g-phy.git',
             'nodeh': 'ssh://git@git.parallelwireless.net:7999/cd/nodeh.git',
-            'cws-rrh': 'ssh://git@git.parallelwireless.net:7999/cd/cws-rrh.git'
+            'cws-rrh': 'ssh://git@git.parallelwireless.net:7999/cd/cws-rrh.git',
+            'osmo2g': 'ssh://git@git.parallelwireless.net:7999/cd/osmo2g.git'
             ]
         def ci_tag = "ci-${PW_REPOSITORY}-${PW_BRANCH}-${NEW_COMMIT_HASH[0..9]}"
         println ci_tag
