@@ -16,7 +16,7 @@ node('docker_build') {
             string(defaultValue: '', description: 'Branch Name:', name: 'push_changes_0_new_name', trim: true),
             string(defaultValue: '', description: 'Possible values: access-product-packaging core nrtric rt-monitoring uniperf core-stacks 2g-stack pnf-vnf core-stacks-phy vru-4g-phy bbpms_bsp vru-2g-phy vru-3g-phy nodeh cws-rrh osmo2g', name: 'repository_slug', trim: true),
             string(defaultValue: '', description: 'New Hash:', name: 'push_changes_0_new_target_hash', trim: true),
-            string(defaultValue: 'develop', description: 'For internal Use:', name: 'global-packaging-branch', trim: true),
+            string(defaultValue: 'develop', description: 'For internal Use:', name: 'global_packaging_branch', trim: true),
         ])
     ])
     def PW_BRANCH = "${push_changes_0_new_name}"
@@ -86,8 +86,8 @@ node('docker_build') {
                             git init
                             git remote add origin ssh://git@git.parallelwireless.net:7999/cd/global-packaging.git
                             git fetch
-                            git checkout -b develop
-                            git pull origin develop
+                            git checkout -b ${global_packaging_branch}
+                            git pull origin ${global_packaging_branch}
                             """
                    }
                }
