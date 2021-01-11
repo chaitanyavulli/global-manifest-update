@@ -15,7 +15,7 @@ node('docker_build') {
             string(defaultValue: '', description: 'Branch Name:', name: 'push_changes_0_new_name', trim: true),
             string(defaultValue: '', description: 'Repository Name', name: 'repository_slug', trim: true),
             string(defaultValue: '', description: 'New Hash:', name: 'push_changes_0_new_target_hash', trim: true),
-            string(defaultValue: 'develop', description: 'For internal Use:', name: 'global-packaging-branch', trim: true),
+            string(defaultValue: 'develop', description: 'For internal Use:', name: 'global_packaging_branch', trim: true),
         ])
     ])
 
