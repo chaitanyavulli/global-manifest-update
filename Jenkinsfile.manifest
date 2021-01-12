@@ -33,6 +33,8 @@ node('docker_build') {
         def verCode = UUID.randomUUID().toString()
 
         notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
+            
+        def repo_mirror_link = "ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git"
 
         def manifest_map = [
             'access-product-packaging': ['integrated-packaging'],
@@ -84,7 +86,7 @@ node('docker_build') {
                             mkdir global-packaging
                             cd global-packaging
                             git init
-                            git remote add origin ssh://git@git.parallelwireless.net:7999/cd/global-packaging.git
+                            git remote add origin ${repo_mirror_link}
                             git fetch
                             git checkout -b ${global_packaging_branch}
                             git pull origin ${global_packaging_branch}
