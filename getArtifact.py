@@ -3,7 +3,7 @@ import requests
 import sys
 import re
 
-latest = None
+latest = (-1, -1)
 tokenUriMap = {}
 
 def getArtifactByDate(date, branch):
