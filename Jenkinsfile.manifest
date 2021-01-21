@@ -61,6 +61,11 @@ node('docker_build') {
             'integrated-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/integrated-packaging.git'
             ]
 
+        def build_jobs = [
+            'core': 'hng-pipeline',
+            'pwconfig': 'pwconfig'
+            ]
+
         def pull_remote = [ 
             'access-product-packaging' 	: 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/access-product-packaging/pull-requests',
             'integrated-packaging' 	: 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/integrated-packaging/pull-requests'
@@ -95,6 +100,19 @@ node('docker_build') {
                    }
                }
              }
+             stage ('Check Artifact'){
+                 dir("${verCode}/global-packaging") {
+                     retValue = sh(returnStatus: true, script: "python getArtifact.py ${NEW_COMMIT_HASH} ${PW_BRANCH}")
+                     if (retValue == 1){
+                         println "Artifact is not present. Re-Triggering the pipeline."
+                         def retr_build_job = build_jobs[PW_REPOSITORY]
+                         build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(push_changes_0_new_target_hash)), string(name: 'repository_slug', value: String.valueOf(repository_slug))], propagate: false, wait: false
+                     } else {
+                         println "Artifact is present."
+                     }
+                 }
+             }
+
              stage('Update Manifest Files') {
                 dir("${verCode}") {
                     def retryAttempt = 0

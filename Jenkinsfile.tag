@@ -88,6 +88,7 @@ node('docker_build') {
                     sh(returnStatus:true, script: "git push origin --tags")
                 }
             }
+
         stage('Trigger Downstream Job Manifest File Update') {
                 dir("${verCode}/${PW_REPOSITORY}") {
                     if ( trigger_downstream_job == true ) {
