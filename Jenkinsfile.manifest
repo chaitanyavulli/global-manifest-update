@@ -142,8 +142,8 @@ node('docker_build') {
                                 println retValue
                                 if (retValue == 1){
                                     println "Branch not present. Pulling from develop"
-                                    retValue = sh(returnStatus: true, script: "git pull origin develop")
                                 }
+                                retValue = sh(returnStatus: true, script: "git pull origin develop")
                                 sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
                                 sh(returnStatus: true, script: "git commit -m 'tag-update commitID auto upgrade' manifest.json")
 				sh(returnStatus: true, script: "git push --set-upstream origin ${INTEG_BRANCH}")
