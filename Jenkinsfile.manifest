@@ -96,7 +96,6 @@ node('docker_build') {
                             git fetch
                             git checkout -b ${global_packaging_branch}
                             git pull origin ${global_packaging_branch}
-                            pip install requests
                             """
                    }
                }
