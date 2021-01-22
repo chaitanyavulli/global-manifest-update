@@ -106,7 +106,7 @@ node('docker_build') {
                      if (retValue == 1){
                          println "Artifact is not present. Re-Triggering the pipeline."
                          def retr_build_job = build_jobs[PW_REPOSITORY]
-                         build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(push_changes_0_new_target_hash)), string(name: 'repository_slug', value: String.valueOf(repository_slug))], propagate: false, wait: false
+                         // build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(push_changes_0_new_target_hash)), string(name: 'repository_slug', value: String.valueOf(repository_slug))], propagate: false, wait: false
                      } else {
                          println "Artifact is present."
                      }
