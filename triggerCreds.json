@@ -1,0 +1,10 @@
+{
+    "jenkins": {
+        "username": "",
+        "token": ""
+    },
+    "bitbucket": {
+        "username": "",
+        "token": ""
+    }
+}
