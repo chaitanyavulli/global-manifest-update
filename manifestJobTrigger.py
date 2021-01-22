@@ -24,6 +24,12 @@ class PWJenkins:
     def trigger_build(self, job_name, paramters):
         job_id = self.server.build_job(job_name, parameters=paramters)
         print('Triggered Job Queue #%s'% (job_id))
+    
+    def get_latest_build_num(self, job_name):
+        return self.server.get_job_info(job_name)['lastBuild']['number']
+
+    def get_next_build_num(self, job_name):
+        return self.server.get_job_info(job_name)['nextBuildNumber']
 
 
 class BitBucket:
@@ -58,7 +64,7 @@ server = PWJenkins('https://pwjenkins.parallelwireless.net:8443')
 server.connect(creds['jenkins']['username'], creds['jenkins']['token'])
 
 job_name = 'global-manifest-update'
-delay = 2.0
+delay = 3.0
 
 bitbucket_handler = BitBucket()
 
@@ -77,8 +83,10 @@ for repo_name in repo_list:
     job_params['push_changes_0_new_target_hash'] = latest_commit
     job_params['global_packaging_branch'] = 'develop'
 
-    print("waiting %s sec" % (delay))
-    time.sleep(delay)
     print("Triggering Job: %s with params: %s" %(job_name, job_params))
     server.trigger_build(job_name,job_params)
+    print("waiting %s sec" % (delay))
+    time.sleep(delay)
+    build_number = server.get_next_build_num(job_name)
+    print("Triggered Build #%s" % (build_number))
     print("Success\n")
