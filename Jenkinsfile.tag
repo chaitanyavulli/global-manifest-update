@@ -66,7 +66,7 @@ node('docker_build') {
                             sleep 60
                         }
                         retryAttempt = retryAttempt + 1
-                        milestone label: PW_REPOSITORY
+                        milestone PW_REPOSITORY label: PW_REPOSITORY
                         sh """
                         rm -rf ${PW_REPOSITORY}
                         mkdir ${PW_REPOSITORY}
