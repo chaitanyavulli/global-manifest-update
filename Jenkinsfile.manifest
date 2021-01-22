@@ -96,13 +96,14 @@ node('docker_build') {
                             git fetch
                             git checkout -b ${global_packaging_branch}
                             git pull origin ${global_packaging_branch}
+                            pip install requests
                             """
                    }
                }
              }
              stage ('Check Artifact'){
                  dir("${verCode}/global-packaging") {
-                     retValue = sh(returnStatus: true, script: "python3.7 getArtifact.py ${NEW_COMMIT_HASH} ${PW_BRANCH}")
+                     retValue = sh(returnStatus: true, script: "python getArtifact.py ${NEW_COMMIT_HASH} ${PW_BRANCH}")
                      if (retValue == 1){
                          println "Artifact is not present. Re-Triggering the pipeline."
                          def retr_build_job = build_jobs[PW_REPOSITORY]
