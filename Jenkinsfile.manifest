@@ -131,7 +131,7 @@ node('docker_build') {
                             cd ${jenkinsWs}
                             pwd
                             rm -rf global-packaging
-                            mkdir global-packaging
+                            sudo mkdir global-packaging
                             cd global-packaging
                             git init
                             git remote add origin ${repo_mirror_link}
