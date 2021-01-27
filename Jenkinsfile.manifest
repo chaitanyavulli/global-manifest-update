@@ -205,8 +205,8 @@ node('docker_build') {
                 pwd
                 """
             }
+          }
         }
-
         catch (Exception Error) {
             currentBuild.result = 'FAILURE'
             throw Error
