@@ -93,8 +93,8 @@ node('docker_build') {
                echo "Openstack Login $env.openstack_login"
                OPENSTACK_USERNAME = "$env.openstack_login"
                OPENSTACK_LABEL = "hng-qa-ci-${OPENSTACK_USERNAME}-setup"
-
-               docker.image("automation:hng-qa-exec-host").inside("$dockerArgs") {
+               docker.image("${dockerImage}").pull()
+               docker.image("${dockerImage}").inside("$dockerArgs") {
                    stage("checkContainer") {
                       catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                         echo "CREATE CONTAINER: ${container}"
