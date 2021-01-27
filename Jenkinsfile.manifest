@@ -19,6 +19,10 @@ node('docker_build') {
             string(defaultValue: 'develop', description: 'For internal Use:', name: 'global_packaging_branch', trim: true),
         ])
     ])
+
+    def verDir = UUID.randomUUID().toString()
+    def PWD = pwd();
+    def jenkinsWs = "${PWD}/$verDir"
     def PW_BRANCH = "${push_changes_0_new_name}"
     def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
     def PW_REPOSITORY = "${repository_slug}"
