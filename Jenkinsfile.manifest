@@ -22,6 +22,7 @@ node('docker_build') {
     def PW_BRANCH = "${push_changes_0_new_name}"
     def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
     def PW_REPOSITORY = "${repository_slug}"
+    def container = "$JOB_NAME-$BUILD_NUMBER"
     def INTEG_BRANCH = "integ/${PW_REPOSITORY}/${PW_BRANCH}"
     def dockerImage = "pwartifactory.parallelwireless.net/pw-docker-images/automation-docker-images/automation:hng-qa-exec-host-v2"
     def dockerArgs = "--name $container --network=host --hostname=$container --cap-add=NET_ADMIN --privileged -e PATH=/staging/bin:/usr/lib64/qt-3.3/bin:/usr/local/maven/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin -v /tmp:/tmp -v /sys/fs/cgroup:/sys/fs/cgroup -v $jenkinsWs:$jenkinsWs"
