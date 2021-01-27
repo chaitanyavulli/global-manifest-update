@@ -133,7 +133,6 @@ node('docker_build') {
                             rm -rf global-packaging
                             sudo mkdir global-packaging
                             cd global-packaging
-                            git init
                             git remote add origin ${repo_mirror_link}
                             git fetch
                             git checkout -b ${global_packaging_branch}
