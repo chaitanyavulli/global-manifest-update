@@ -99,7 +99,7 @@ node('docker_build') {
                       catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                         echo "CREATE CONTAINER: ${container}"
                         sh """
-                        cd /root
+                        cd /home/parallel
                         ls
                         sleep 2
                         hostname
