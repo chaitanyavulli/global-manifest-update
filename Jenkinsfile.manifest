@@ -133,11 +133,11 @@ node('docker_build') {
                             rm -rf global-packaging
                             sudo mkdir global-packaging
                             cd global-packaging
-                            git clone ${repo_mirror_link}
+                            sudo git clone ${repo_mirror_link}
                             cd global-manifest-update/
-                            git config core.sparseCheckout true
+                            sudo git config core.sparseCheckout true
                             echo "global-manifest-update/*" > .git/info/sparse-checkout
-                            git checkout -b ${global_packaging_branch}
+                            sudo git checkout -b ${global_packaging_branch}
                             pwd
                             """
                              
