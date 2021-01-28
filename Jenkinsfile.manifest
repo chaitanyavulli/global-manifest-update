@@ -133,13 +133,13 @@ node('docker_build') {
                             rm -rf global-packaging
                             sudo mkdir global-packaging
                             cd global-packaging
-                            sudo git init
+                            git init
                             git config core.sparseCheckout true
                             echo "global-packaging/*" > .git/info/sparse-checkout
-                            sudo git remote add origin ${repo_mirror_link}
-                            sudo git fetch
-                            sudo git checkout -b ${global_packaging_branch}
-                            sudi git pull origin ${global_packaging_branch}
+                            git remote add origin ${repo_mirror_link}
+                            git fetch
+                            git checkout -b ${global_packaging_branch}
+                            git pull origin ${global_packaging_branch}
                             """
                       }
                 }
