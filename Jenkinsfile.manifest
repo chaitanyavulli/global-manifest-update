@@ -118,7 +118,6 @@ node('docker_build') {
                     dir("${verCode}") {
                         def retryAttempt = 0
                          sh """
-                         cat ~/.ssh/known_hosts
                          ssh-keyscan -p 7999 git.parallelwireless.net >> ~/.ssh/known_hosts
                          cat ~/.ssh/known_hosts
                          mkdir -p ${jenkinsWs}
