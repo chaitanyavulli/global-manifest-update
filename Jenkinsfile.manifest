@@ -118,7 +118,8 @@ node('docker_build') {
                     dir("${verCode}") {
                         def retryAttempt = 0
                          sh """
-                         ssh-keyscan -p 7999 nhbsm03.parallelwireless.net >> ~/.ssh/known_hosts
+                         ssh-keyscan -p 7999 git.parallelwireless.net >> ~/.ssh/known_hosts
+                         cat ~/.ssh/known_hosts
                          mkdir -p ${jenkinsWs}
                          """
                         retry(2) {
@@ -239,6 +240,7 @@ node('docker_build') {
             throw Error
         }
         finally {
+            cleanDocker("${dockerImage}")
             cleanWs()
             notifySuccessful(pull_list)
             notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
