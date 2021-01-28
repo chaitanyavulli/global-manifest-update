@@ -44,7 +44,7 @@ node('docker_build') {
 
         notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
             
-        def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
+        def repo_mirror_link = 'ssh://git@nhbsm03.parallelwireless.net:7999/cd/global-manifest-update.git'
 
         def manifest_map = [
             'access-product-packaging': ['integrated-packaging'],
@@ -118,7 +118,7 @@ node('docker_build') {
                     dir("${verCode}") {
                         def retryAttempt = 0
                          sh """
-                         ssh-keyscan -p 7999 git.parallelwireless.net >> ~/.ssh/known_hosts
+                         ssh-keyscan -p 7999 nhbsm03.parallelwireless.net >> ~/.ssh/known_hosts
                          cat ~/.ssh/known_hosts
                          mkdir -p ${jenkinsWs}
                          """
