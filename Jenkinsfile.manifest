@@ -118,7 +118,7 @@ node('docker_build') {
                     dir("${verCode}") {
                         def retryAttempt = 0
                          sh """
-                         ssh-keyscan -p 7999 punebsm01.parallelwireless.net >> ~/.ssh/known_hosts
+                         ssh-keyscan -p 7999 nhbsm03.parallelwireless.net >> ~/.ssh/known_hosts
                          mkdir -p ${jenkinsWs}
                          """
                         retry(2) {
@@ -134,6 +134,8 @@ node('docker_build') {
                             sudo mkdir global-packaging
                             cd global-packaging
                             sudo git init
+                            git config core.sparseCheckout true
+                            echo "global-packaging/*" > .git/info/sparse-checkout
                             sudo git remote add origin ${repo_mirror_link}
                             sudo git fetch
                             sudo git checkout -b ${global_packaging_branch}
