@@ -19,20 +19,10 @@ node('docker_build') {
             string(defaultValue: 'develop', description: 'For internal Use:', name: 'global_packaging_branch', trim: true),
         ])
     ])
-
-    def verDir = UUID.randomUUID().toString()
-    def PWD = pwd();
-    def jenkinsWs = "${PWD}/$verDir"
     def PW_BRANCH = "${push_changes_0_new_name}"
     def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
     def PW_REPOSITORY = "${repository_slug}"
-    def container = "$JOB_NAME-$BUILD_NUMBER"
     def INTEG_BRANCH = "integ/${PW_REPOSITORY}/${PW_BRANCH}"
-    def dockerImage = "pwartifactory.parallelwireless.net/pw-docker-images/automation-docker-images/automation:hng-qa-exec-host-v2"
-    def dockerArgs = "--name $container --network=host --hostname=$container --cap-add=NET_ADMIN --privileged -e PATH=/staging/bin:/usr/lib64/qt-3.3/bin:/usr/local/maven/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin -v /tmp:/tmp -v /sys/fs/cgroup:/sys/fs/cgroup -v $jenkinsWs:$jenkinsWs"
-    def OPENSTACK_USERNAME = ""
-    def OPENSTACK_LABEL = ""
-
 
     timestamps {
         timeout(time: 3, unit: 'HOURS') {
@@ -44,7 +34,7 @@ node('docker_build') {
 
         notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
             
-        def repo_mirror_link = 'ssh://git@nhbsm03.parallelwireless.net:7999/cd/global-manifest-update.git'
+        def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
 
         def manifest_map = [
             'access-product-packaging': ['integrated-packaging'],
@@ -87,77 +77,33 @@ node('docker_build') {
         def pull_list = []
 
         try {
-           
-            stage("createContainer") {
 
-               echo "Openstack Login $env.openstack_login"
-               OPENSTACK_USERNAME = "$env.openstack_login"
-               OPENSTACK_LABEL = "hng-qa-ci-${OPENSTACK_USERNAME}-setup"
-               docker.image("${dockerImage}").pull()
-               docker.image("${dockerImage}").inside("$dockerArgs") {
-                   stage("checkContainer") {
-                      catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                        echo "CREATE CONTAINER: ${container}"
-                        sh """
-                        cd /home/parallel
-                        ls
-                        sleep 2
-                        hostname
-                        tshark -v
-                        sudo tshark -v
-                        terraform -v
-                        python3.7 -V
-                        ansible --version
-                        ifconfig
-                        pwd
-                        """
-                    }
-                }
-
-                stage ('Clone'){
-                    dir("${verCode}") {
-                        def retryAttempt = 0
-                         sh """
-                         mkdir -p -m 0600 /root/.ssh
-                         ssh-keyscan -p 7999 nhbsm03.parallelwireless.net >> ~/.ssh/known_hosts
-                         cat ~/.ssh/known_hosts
-                         mkdir -p ${jenkinsWs}
-                         """
-                        retry(2) {
-                           if (retryAttempt > 0) {
+             stage ('Clone'){
+               dir("${verCode}") {
+                    def retryAttempt = 0
+                    retry(2) {
+                        if (retryAttempt > 0) {
                             sleep 60
-                            }
+                        }
                         retryAttempt = retryAttempt + 1
                             sh """
                             pwd
-                            cd ${jenkinsWs}
-                            pwd
                             rm -rf global-packaging
-                            sudo mkdir global-packaging
+                            mkdir global-packaging
                             cd global-packaging
-                            sudo git clone ${repo_mirror_link}
-                            cd global-manifest-update/
-                            sudo git config core.sparseCheckout true
-                            echo "global-manifest-update/*" > .git/info/sparse-checkout
-                            sudo git checkout -b ${global_packaging_branch}
-                            pwd
+                            git init
+                            git remote add origin ${repo_mirror_link}
+                            git fetch
+                            git checkout -b ${global_packaging_branch}
+                            git pull origin ${global_packaging_branch}
                             """
-                             
-                            
-                            //sudo git init
-                            //sudo git config core.sparseCheckout true
-                            
-                            //sudo echo "global-packaging/*" > .git/info/sparse-checkout
-                            //sudo git remote add origin ${repo_mirror_link}
-                            //sudo git fetch
-                            //sudo git checkout -b ${global_packaging_branch}
-                            //sudo git pull origin ${global_packaging_branch}
-                      }
-                }
-              }
+                   }
+               }
+             }
              stage ('Check Artifact'){
                  dir("${verCode}/global-packaging") {
-                     retValue = sh(returnStatus: true, script: "python getArtifact.py ${NEW_COMMIT_HASH} ${PW_BRANCH}")
+                     //retValue = sh(returnStatus: true, script: "python getArtifact.py ${NEW_COMMIT_HASH} ${PW_BRANCH}")
+                     println sh(returnStatus: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commit-date=${NEW_COMMIT_HASH}&branch=${PW_BRANCH}&HNG-DEV-CI=successful&HNG-QA-CI=successful&type=image")
                      if (retValue == 1){
                          println "Artifact is not present. Re-Triggering the pipeline."
                          def retr_build_job = build_jobs[PW_REPOSITORY]
@@ -219,29 +165,12 @@ node('docker_build') {
                 }
             }
             currentBuild.result = 'SUCCESS'
-          } 
-        }
-        stage("deleteDockerImageAndFiles"){
-            catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                echo "DELETE DOCKER IMAGE AND DOCKER FILES"
-                sh """
-                cd /root
-                docker ps
-                docker rmi automation:hng-qa-exec-host
-                sleep 2
-                docker images
-                rm -rf $dockerFilesPath
-                pwd
-                """
-            }
-          }
         }
         catch (Exception Error) {
             currentBuild.result = 'FAILURE'
             throw Error
         }
         finally {
-            cleanDocker("${dockerImage}")
             cleanWs()
             notifySuccessful(pull_list)
             notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
