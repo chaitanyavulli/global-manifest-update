@@ -104,9 +104,9 @@ node('docker_build') {
                  dir("${verCode}/global-packaging") {
                      //retValue = sh(returnStatus: true, script: "python getArtifact.py ${NEW_COMMIT_HASH} ${PW_BRANCH}")
                      retValue = sh(returnStdout: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commitID=${NEW_COMMIT_HASH}&branch=${PW_BRANCH}&type=image")
-                     
-                     def ret_data = readJSON(text: retValue)
-                     //def ret_data = readJSON text:retValue.toString(),returnPojo: true 
+                      println retValue 
+                     //def ret_data = readJSON(text: retValue)
+                     def ret_data = readJSON text:retValue.toString(),returnPojo: true 
                      println ret_data["results"]
                      if (ret_data["results"].isEmpty() != false){
                          println "Artifact is not present. Re-Triggering the pipeline."
