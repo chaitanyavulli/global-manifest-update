@@ -109,7 +109,7 @@ node('docker_build') {
                      //def ret_data = readJSON(text: retValue)
                      def ret_data = null
                      try {
-                     def ret_data = readJSON text:retValue.toString(),returnPojo: true 
+                     ret_data = readJSON text:retValue.toString(),returnPojo: true 
                      println ret_data["results"]
                      } catch(Exception ex) {
                         println "Exception in"
