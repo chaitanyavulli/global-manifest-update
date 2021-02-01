@@ -106,11 +106,12 @@ node('docker_build') {
                      retValue = sh(returnStdout: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commitID=${NEW_COMMIT_HASH}&branch=${PW_BRANCH}&type=image")
                      println retValue.getClass()
                      println retValue
-                     //def ret_data = readJSON(text: retValue)
                      def ret_data = null
                      try {
-                     ret_data = readJSON text:retValue.toString(),returnPojo: true 
-                     println ret_data["results"]
+
+                        ret_data = readJSON text:retValue.toString(),returnPojo: true 
+                        println ret_data["results"]
+
                      } catch(Exception ex) {
                         println "Exception in"
                      }
@@ -118,8 +119,11 @@ node('docker_build') {
                      if (ret_data["results"].isEmpty() != false){
                          println "Artifact is not present. Re-Triggering the pipeline."
                          def retr_build_job = build_jobs[PW_REPOSITORY]
-                         build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(push_changes_0_new_target_hash)), string(name: 'repository_slug', value: String.valueOf(repository_slug))], propagate: false, wait: false
-                     } else {
+
+                         //build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(push_changes_0_new_target_hash)), string(name: 'repository_slug', value: String.valueOf(repository_slug))], propagate: false, wait: false
+                   
+                         build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(NEW_COMMIT_HASH)), string(name: 'repository_slug', value: String.valueOf(PW_REPOSITORY))], propagate: false, wait: false
+                       } else {
                          println "Artifact is present."
                      }
                  }
