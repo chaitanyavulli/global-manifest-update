@@ -111,7 +111,7 @@ node('docker_build') {
                         //retValue = sh(returnStatus: true, script: "python getArtifact.py ${NEW_COMMIT_HASH} ${PW_BRANCH}")
                         retValue = sh(returnStdout: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commitID=${NEW_COMMIT_HASH}&branch=${PW_BRANCH}&type=image")
                         println retValue
-                        if ( retValue == null)
+                        if ( retValue == "")
                             retValue = sh(returnStdout: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commitID=${NEW_COMMIT_HASH}&branch=${PW_BRANCH}&type=image")    
 
                         ret_data = readJSON text:retValue.toString(),returnPojo: true 
@@ -121,7 +121,7 @@ node('docker_build') {
                      catch(Exception ex) {
 
                         println "Exception occure"
-                        throw Error
+                        throw ex
                      }
 
                      if (ret_data["results"].isEmpty() != false) {
