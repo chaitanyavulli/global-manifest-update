@@ -105,9 +105,16 @@ node('docker_build') {
                      //retValue = sh(returnStatus: true, script: "python getArtifact.py ${NEW_COMMIT_HASH} ${PW_BRANCH}")
                      retValue = sh(returnStdout: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commitID=${NEW_COMMIT_HASH}&branch=${PW_BRANCH}&type=image")
                      println retValue.getClass()
+                     println retValue
                      //def ret_data = readJSON(text: retValue)
+                     try {
                      def ret_data = readJSON text:retValue.toString(),returnPojo: true 
                      println ret_data["results"]
+                     } catch(Exception ex) {
+                        println "Exception in"
+                        println retValue
+                     }
+
                      if (ret_data["results"].isEmpty() != false){
                          println "Artifact is not present. Re-Triggering the pipeline."
                          def retr_build_job = build_jobs[PW_REPOSITORY]
