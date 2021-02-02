@@ -109,14 +109,11 @@ node('docker_build') {
                      try {
 
                         //retValue = sh(returnStatus: true, script: "python getArtifact.py ${NEW_COMMIT_HASH} ${PW_BRANCH}")
-                        retValue = sh(returnStdout: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commitID=${NEW_COMMIT_HASH}&branch=${PW_BRANCH}&type=image")
-                        println retValue
+                        retValue = sh(returnStdout: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commitID=${NEW_COMMIT_HASH}")
                         if ( retValue == "")
-                            retValue = sh(returnStdout: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commitID=${NEW_COMMIT_HASH}&branch=${PW_BRANCH}&type=image")    
+                            retValue = sh(returnStdout: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commitID=${NEW_COMMIT_HASH}")    
 
                         ret_data = readJSON text:retValue.toString(),returnPojo: true 
-                        println ret_data["results"]
-
                      } 
                      catch(Exception ex) {
 
