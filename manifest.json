@@ -1,8 +1,0 @@
-{
-    "Product": [{"access-product-packaging": "9b4853f806c6f44c8f145e1eb592f6528110a2dd"},
-                {"core": "c0db9b70f1fd1f05eff81db9cf3909d9b38645e6"},
-                {"nrtric": "adfs"},
-                {"rt-monitoring": "asdf"},
-                {"uniperf": "8020bbb7dcd1f57926ce6da944e886f767e58f88"}
-                ]
-}
