@@ -52,9 +52,8 @@ node('docker_build') {
                             sleep 60
                         }
                         retryAttempt = retryAttempt + 1
-                        repo_link_map.each {mirror ->
+                        repo_link_map.each {mirror, mirror_link ->
                          
-                            mirror_link = repo_link_map[mirror]
                             println mirror_link
                             println mirror 
                             sh """
