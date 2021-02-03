@@ -59,16 +59,13 @@ node('docker_build') {
                             sh """
                             pwd
                             rm -rf ${mirror}
-                            mkdir ${mirror}
-                            cd ${mirror}
                             git clone ${mirror_link}
-                            git pull
                             pwd
                             """
                             dir("${mirror}") {
                                   
                                 retValue = sh(returnStatus: true, script: "pwd")
-                                //retValue = sh(returnStatus: true, script: "git checkout -b develop")
+                                retValue = sh(returnStatus: true, script: "git pull")
                                 def retr_build_job = "global-manifest-update"
                                 def short_commit_hash = sh (returnStdout: true , script: "git rev-parse --short=8 HEAD").trim()               
                   
