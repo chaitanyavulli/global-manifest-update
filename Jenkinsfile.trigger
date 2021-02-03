@@ -54,7 +54,7 @@ node('docker_build') {
                         retryAttempt = retryAttempt + 1
                         repo_link_map.each {mirror ->
                          
-                            mirror_link = git_remotes[mirror] 
+                            mirror_link = repo_link_map[mirror] 
                             sh """
                             pwd
                             rm -rf ${mirror}
