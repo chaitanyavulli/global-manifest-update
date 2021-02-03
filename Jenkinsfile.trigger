@@ -9,7 +9,7 @@ plugins used in Jenkinsfile
 - Workspace Cleanup Plugin (cleanWs)
 - org.jenkinsci.plugins.pipeline.modeldefinition.Utils to skipspecific stages
 */
-node('build_trigger') {
+node('docker_build') {
 
 
     def PW_BRANCH = "${push_changes_0_new_name}"
