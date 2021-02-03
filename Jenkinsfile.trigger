@@ -62,7 +62,6 @@ node('docker_build') {
                             mkdir ${mirror}
                             cd ${mirror}
                             git clone ${mirror_link}
-                            cd ${mirror}
                             git pull
                             pwd
                             """
