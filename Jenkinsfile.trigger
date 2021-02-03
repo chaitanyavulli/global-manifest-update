@@ -39,7 +39,6 @@ node('build_trigger') {
             'pwconfig': 'pwconfig'
             ]
         
-        def mirror = ''
         def pull_api = ''
         def pull_req = ''
         def pull_list = []
