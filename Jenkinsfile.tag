@@ -53,8 +53,47 @@ node('docker_build') {
             'cws-rrh': 'ssh://git@git.parallelwireless.net:7999/cd/cws-rrh.git',
             'osmo2g': 'ssh://git@git.parallelwireless.net:7999/cd/osmo2g.git'
             ]
+
+        def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
+
+        def manifest_map = [
+            'access-product-packaging': ['integrated-packaging'],
+            'core': ['access-product-packaging','integrated-packaging'],
+            'nrtric': ['integrated-packaging'],
+            'rt-monitoring': ['integrated-packaging'],
+            'uniperf': ['integrated-packaging'],
+            'pwconfig': ['integrated-packaging'],
+            'core-stacks': ['access-product-packaging'],
+            '2g-stack': ['access-product-packaging'],
+            'pnf-vnf': ['access-product-packaging'],
+            'core-stacks-phy': ['access-product-packaging'],
+            'vru-4g-phy': ['access-product-packaging'],
+            'bbpms_bsp': ['access-product-packaging'],
+            'vru-2g-phy': ['access-product-packaging'],
+            'vru-3g-phy': ['access-product-packaging'],
+            'nodeh': ['access-product-packaging'],
+            'cws-rrh': ['access-product-packaging'],
+            'osmo2g': ['access-product-packaging']
+            ]
+
+        def build_jobs = [
+            'core': 'hng-pipeline',
+            'pwconfig': 'pwconfig'
+            ]
+
+        def pull_remote = [
+            'access-product-packaging'  : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/access-product-packaging/pull-requests',
+            'integrated-packaging'      : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/integrated-packaging/pull-requests'
+            ]
+
+
+        def mirror = ''
+        def pull_api = ''
+        def pull_req = ''
+        def pull_list = []
         def ci_tag = "ci-${PW_REPOSITORY}-${PW_BRANCH}-${NEW_COMMIT_HASH[0..9]}"
         println ci_tag
+
         try {
              stage('Fetch Code') {
                 dir("${verCode}") {
@@ -75,10 +114,10 @@ node('docker_build') {
                         git fetch
                         """
                     } 
-                }
-            }
+                 }
+             }
         
-        stage('Tag Git Repo') {
+             stage('Tag Git Repo') {
                 dir("${verCode}/${PW_REPOSITORY}") {
                     retValue = sh(returnStatus:true, script: "git tag -a ${ci_tag} -m \"Automated Tag\" ${NEW_COMMIT_HASH}")
                     if (retValue == 128){
@@ -86,12 +125,112 @@ node('docker_build') {
                     }
                     sh(returnStatus:true, script: "git push origin --tags")
                 }
+             }
+       
+            stage ('Clone'){
+               dir("${verCode}") {
+                    def retryAttempt = 0
+                    retry(2) {
+                        if (retryAttempt > 0) {
+                            sleep 60
+                        }
+                        retryAttempt = retryAttempt + 1
+                            sh """
+                            pwd
+                            rm -rf global-packaging
+                            mkdir global-packaging
+                            cd global-packaging
+                            git init
+                            git remote add origin ${repo_mirror_link}
+                            git fetch
+                            git checkout -b ${global_packaging_branch}
+                            git pull origin ${global_packaging_branch}
+                            """
+                   }
+               }
             }
 
-        stage('Trigger Downstream Job Manifest File Update') {
-                dir("${verCode}/${PW_REPOSITORY}") {
-                    if ( trigger_downstream_job == true ) {
-                     build job: 'manifest-file-update', parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(push_changes_0_new_target_hash)), string(name: 'repository_slug', value: String.valueOf(repository_slug))], propagate: false, wait: false
+            stage ('Check Artifact'){
+                 dir("${verCode}/global-packaging") {
+
+                     def retValue = null
+                     def ret_data = null
+
+                     try {
+
+                        //retValue = sh(returnStatus: true, script: "python getArtifact.py ${NEW_COMMIT_HASH} ${PW_BRANCH}")
+                        retValue = sh(returnStdout: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commitID=${NEW_COMMIT_HASH}")
+                        if ( retValue == "")
+                            retValue = sh(returnStdout: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commitID=${NEW_COMMIT_HASH}")
+
+                        ret_data = readJSON text:retValue.toString(),returnPojo: true
+                     }
+                     catch(Exception ex) {
+
+                        println "Exception occure"
+                        throw ex
+                     }
+
+                     if (ret_data["results"].isEmpty() != false) {
+
+                         println "Artifact is not present. Re-Triggering the pipeline."
+                         def retr_build_job = build_jobs[PW_REPOSITORY]
+
+                         build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(NEW_COMMIT_HASH)), string(name: 'repository_slug', value: String.valueOf(PW_REPOSITORY))], propagate: false, wait: false
+
+                     } else {
+
+                         println "Artifact is present."
+                     }
+                 }
+            }
+
+             stage('Update Manifest Files') {
+                dir("${verCode}") {
+                    def retryAttempt = 0
+                    retry(2) {
+                        if (retryAttempt > 0) {
+                            sleep 60
+                        }
+                        retryAttempt = retryAttempt + 1
+                        def remotes = manifest_map[PW_REPOSITORY]
+                        remotes.each{remote ->
+                            mirror= git_remotes[remote]
+                            pull_api = pull_remote[remote]
+                            sh """
+                            pwd
+                            rm -rf ${remote}
+                            mkdir ${remote}
+                            cd ${remote}
+                            git init
+                            git remote add origin ${mirror}
+                            git fetch
+                            """
+
+                            dir("${remote}"){
+                                retValue = sh(returnStatus: true, script: "pwd")
+                                retValue = sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH}")
+                                retValue = sh(returnStatus: true, script: "git pull origin ${INTEG_BRANCH}")
+                                println retValue
+                                if (retValue == 1){
+                                    println "Branch not present. Pulling from develop"
+                                }
+                                retValue = sh(returnStatus: true, script: "git pull origin develop")
+                                sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
+                                sh(returnStatus: true, script: "git commit -m 'tag-update commitID auto upgrade' manifest.json")
+                                sh(returnStatus: true, script: "git push --set-upstream origin ${INTEG_BRANCH}")
+                                pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} develop ${pull_api} ${remote} ${remote}").trim()
+                                println pull_req
+                                def props = readJSON text:pull_req.toString(),returnPojo: true
+
+                                if ( props['errors'] != null ){
+                                   println props.errors[0].existingPullRequest.links.self[0].href
+                                   pull_list.add(props.errors[0].existingPullRequest.links.self[0].href)
+                                } else { println props.links.self[0].href
+                                   pull_list.add(props.links.self[0].href)
+                                }
+                            }
+                        }
                     }
                 }
             }
