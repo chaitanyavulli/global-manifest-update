@@ -36,6 +36,7 @@ node('docker_build') {
         def trigger_downstream_job = true
         def git_remotes = [
             'access-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/access-product-packaging.git',
+            'integrated-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/integrated-packaging.git',
             'core': 'ssh://git@git.parallelwireless.net:7999/cd/core.git',
             'nrtric': 'ssh://git@git.parallelwireless.net:7999/cd/cloudapps.git',
             'rt-monitoring': 'ssh://git@git.parallelwireless.net:7999/da/rt-monitoring.git',
