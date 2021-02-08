@@ -95,7 +95,7 @@ node('docker_build') {
         }
         finally {
             cleanWs()
-            notifySuccessful(pull_list)
+            //notifySuccessful(pull_list)
             notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
          }
       }
