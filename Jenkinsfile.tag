@@ -97,7 +97,7 @@ node('docker_build') {
         println ci_tag
 
         try {
-             stage('Fetch Code') {
+             stage('Clone Upstream Repo') {
                 dir("${verCode}") {
                     def retryAttempt = 0
                     mirror = git_remotes[PW_REPOSITORY]
@@ -119,7 +119,7 @@ node('docker_build') {
                  }
              }
         
-             stage('Tag Git Repo') {
+             stage('Tag Upstream Commit') {
                 dir("${verCode}/${PW_REPOSITORY}") {
                     retValue = sh(returnStatus:true, script: "git tag -a ${ci_tag} -m \"Automated Tag\" ${NEW_COMMIT_HASH}")
                     if (retValue == 128){
@@ -129,7 +129,7 @@ node('docker_build') {
                 }
              }
        
-            stage ('Clone'){
+            stage ('Clone global-manifest-update Repo'){
                dir("${verCode}") {
                     def retryAttempt = 0
                     retry(2) {
@@ -152,7 +152,7 @@ node('docker_build') {
                }
             }
 
-            stage ('Check Artifact'){
+            stage ('Check Upstream Artifact'){
                  dir("${verCode}/global-packaging") {
 
                      def retValue = null
