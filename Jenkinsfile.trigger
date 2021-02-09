@@ -27,6 +27,14 @@ node('docker_build') {
     def PW_REPOSITORY = "${repository_slug}"
     def INTEG_BRANCH = "integ/${PW_REPOSITORY}/${PW_BRANCH}"
 
+    def secrets = [
+        [path: 'development/engsvcs/global-manifest-update', engineVersion: 2, secretValues: [[envVar: 'prPass', vaultKey: 'prPassword'],[envVar: 'prUser', vaultKey: 'prUser']]]
+
+    ]
+    def configuration = [vaultUrl: 'https://vault.parallelwireless.net',
+                         vaultCredentialId: 'pwvault',
+                         engineVersion: 2]
+    withVault([configuration: configuration, vaultSecrets: secrets]) {
      timestamps {
         timeout(time: 3, unit: 'HOURS') {
 
@@ -101,4 +109,5 @@ node('docker_build') {
          }
       }
    }
+}
 }

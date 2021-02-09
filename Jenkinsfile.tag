@@ -24,6 +24,15 @@ node('docker_build') {
     def PW_REPOSITORY = "${repository_slug}"
     def INTEG_BRANCH = "integ/${PW_REPOSITORY}/${PW_BRANCH}"
 
+    def buildUser = getBuildUser()
+    def secrets = [
+        [path: 'development/engsvcs/global-manifest-update', engineVersion: 2, secretValues: [[envVar: 'prPass', vaultKey: 'prPassword'],[envVar: 'prUser', vaultKey: 'prUser']]]
+
+    ]
+    def configuration = [vaultUrl: 'https://vault.parallelwireless.net',
+                         vaultCredentialId: 'pwvault',
+                         engineVersion: 2]
+    withVault([configuration: configuration, vaultSecrets: secrets]) {
     timestamps {
         timeout(time: 3, unit: 'HOURS') {
 
@@ -121,7 +130,7 @@ node('docker_build') {
         
              stage('Tag Upstream Commit') {
                 dir("${verCode}/${PW_REPOSITORY}") {
-                    retValue = sh(returnStatus:true, script: "git tag -a ${ci_tag} -m \"Automated Tag\" ${NEW_COMMIT_HASH}")
+                    retValue = sh(returnStatus:true, script: "git tag -a ${ci_tag} -m \"Automated Tag created by ${buildUser} for commit Hash: \" ${NEW_COMMIT_HASH}")
                     if (retValue == 128){
                         println "Tag already present"
                     }
@@ -221,7 +230,7 @@ node('docker_build') {
                                 sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
                                 sh(returnStatus: true, script: "git commit -m 'tag-update commitID auto upgrade' manifest.json")
                                 sh(returnStatus: true, script: "git push --set-upstream origin ${INTEG_BRANCH}")
-                                pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} develop ${pull_api} ${remote} ${remote}").trim()
+                                pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} develop ${pull_api} ${remote} ${remote}").trim() ${buildUser}
                                 println pull_req
                                 def props = readJSON text:pull_req.toString(),returnPojo: true
 
@@ -249,6 +258,7 @@ node('docker_build') {
         }
     }
   }
+ }
 }
 
 def notifySuccessful() {
@@ -259,4 +269,9 @@ def notifySuccessful() {
          mimeType: 'text/html',
          recipientProviders: [developers(), requestor()]
     )
+}
+
+@NonCPS
+def getBuildUser() {
+    return currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
 }
