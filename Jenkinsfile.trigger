@@ -64,7 +64,7 @@ node('docker_build') {
                         retryAttempt = retryAttempt + 1
                         repo_link_map.each {mirror, mirror_link ->
                          
-                         stage(mirror + "Trigger manifest update"){
+                         stage(mirror + " : Trigger manifest update"){
                             println mirror_link
                             println mirror 
                             sh """
