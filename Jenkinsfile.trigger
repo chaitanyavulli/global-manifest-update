@@ -64,6 +64,7 @@ node('docker_build') {
                         retryAttempt = retryAttempt + 1
                         repo_link_map.each {mirror, mirror_link ->
                          
+                         stage("trigger global manifest update"){
                             println mirror_link
                             println mirror 
                             sh """
@@ -82,8 +83,8 @@ node('docker_build') {
                                 build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(short_commit_hash)), string(name: 'repository_slug', value: String.valueOf(mirror))], propagate: false, wait: false
 
                             }
+                          }
                         }
-                    
                    }
                }
            }
