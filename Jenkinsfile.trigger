@@ -40,8 +40,8 @@ node('docker_build') {
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
 
         def repo_link_map = [
-            //'core': 'ssh://git@git.parallelwireless.net:7999/cd/core.git',
-            'pwconfig': 'ssh://git@git.parallelwireless.net:7999/cd/pwconfig.git' 
+            'pwconfig': 'ssh://git@git.parallelwireless.net:7999/cd/pwconfig.git',
+            'core': 'ssh://git@git.parallelwireless.net:7999/cd/core.git' 
             ]
 
         def build_jobs = [
