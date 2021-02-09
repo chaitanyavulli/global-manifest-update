@@ -79,7 +79,7 @@ node('docker_build') {
                                 def retr_build_job = "global-manifest-update"
                                 def short_commit_hash = sh (returnStdout: true , script: "git rev-parse HEAD").trim()               
                   
-                                build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(short_commit_hash)), string(name: 'repository_slug', value: String.valueOf(PW_REPOSITORY))], propagate: false, wait: false
+                                build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(short_commit_hash)), string(name: 'repository_slug', value: String.valueOf(mirror))], propagate: false, wait: false
 
                             }
                         }
