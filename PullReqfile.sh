@@ -5,13 +5,14 @@ feat_branch=$2
 pull_url=$3
 src_slug=$4
 dst_slug=$5
+pr_user=$6
 
 process_id=`cat /dev/urandom | tr -dc '0-9' | fold -w 256 | head -n 1 | sed -e 's/^0*//' | head --bytes 10`
 cat > /tmp/${process_id}_datareq.json <<EOF
 
   {
     "title": "Pull Request",
-    "description": "Pull Requested has been created from $integ_branch to $feat_branch",
+    "description": "Pull Requested has been created from $integ_branch to $feat_branch by $pr_user",
     "state": "OPEN",
     "open": true,
     "closed": false,
@@ -51,5 +52,5 @@ modified_branch=`echo "$integ_branch"|sed -e "s/\//%/g"`
 sed -i "s/sourcepullbranch/$modified_branch/g" /tmp/${process_id}_datareq.json
 sed -i "s/%/\//g" /tmp/${process_id}_datareq.json
 
-curl -s -u pw-build:builtit4u! -H "Content-Type: application/json" $pull_url -X POST --data @/tmp/${process_id}_datareq.json 
+curl -s -u ${prUser}:${prPass} -H "Content-Type: application/json" $pull_url -X POST --data @/tmp/${process_id}_datareq.json 
 #> /tmp/${process_id}_curl.log 2>&1
