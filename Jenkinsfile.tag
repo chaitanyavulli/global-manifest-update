@@ -15,6 +15,7 @@ node('docker_build') {
             string(defaultValue: '', description: 'Branch Name:', name: 'push_changes_0_new_name', trim: true),
             string(defaultValue: '', description: 'Repository Name: (Possible values: access-product-packaging core nrtric rt-monitoring uniperf pwconfig core-stacks 2g-stack pnf-vnf core-stacks-phy vru-4g-phy bbpms_bsp vru-2g-phy vru-3g-phy nodeh cws-rrh osmo2g)', name: 'repository_slug', trim: true),
             string(defaultValue: '', description: 'New Hash:', name: 'push_changes_0_new_target_hash', trim: true),
+            string(defaultValue: 'develop', description: 'PR Destination:', name: 'dest_branch', trim: true),
             string(defaultValue: 'develop', description: 'For internal Use:', name: 'global_packaging_branch', trim: true),
         ])
     ])
@@ -23,6 +24,7 @@ node('docker_build') {
     def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
     def PW_REPOSITORY = "${repository_slug}"
     def INTEG_BRANCH = "integ/${PW_REPOSITORY}/${PW_BRANCH}"
+    def DEST_BRANCH = "${dest_branch}"
 
     def buildUser = getBuildUser()
     def secrets = [
@@ -220,17 +222,17 @@ node('docker_build') {
 
                             dir("${remote}"){
                                 retValue = sh(returnStatus: true, script: "pwd")
-                                retValue = sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH}")
+                                retValue = sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${DEST_BRANCH}")
                                 retValue = sh(returnStatus: true, script: "git pull origin ${INTEG_BRANCH}")
                                 println retValue
                                 if (retValue == 1){
                                     println "Branch not present. Pulling from develop"
+                                    retValue = sh(returnStatus: true, script: "git pull origin develop")
                                 }
-                                retValue = sh(returnStatus: true, script: "git pull origin develop")
                                 sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
                                 sh(returnStatus: true, script: "git commit -m 'tag-update commitID auto upgrade' manifest.json")
                                 sh(returnStatus: true, script: "git push --set-upstream origin ${INTEG_BRANCH}")
-                                pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} develop ${pull_api} ${remote} ${remote}").trim() ${buildUser}
+                                pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} ${DEST_BRANCH} ${pull_api} ${remote} ${remote} ${buildUser}").trim()
                                 println pull_req
                                 def props = readJSON text:pull_req.toString(),returnPojo: true
 
@@ -273,5 +275,9 @@ def notifySuccessful() {
 
 @NonCPS
 def getBuildUser() {
-    return currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
+    if (currentBuild.rawBuild.getCause(Cause.UserIdCause) != null) {
+        return currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
+    } else{
+        return 'parallel'
+    }
 }

@@ -27,7 +27,7 @@ cat > /tmp/${process_id}_datareq.json <<EOF
          }
     },
     "toRef": {
-        "id": "$feat_branch",
+        "id": "destpullbranch",
         "repository": {
             "slug": "$dst_slug",
             "name": null,
@@ -48,8 +48,9 @@ EOF
 
 #cp datreq.json datareq.json
 modified_branch=`echo "$integ_branch"|sed -e "s/\//%/g"`
-
+modified_dest_branch=`echo "$feat_branch"|sed -e "s/\//%/g"`
 sed -i "s/sourcepullbranch/$modified_branch/g" /tmp/${process_id}_datareq.json
+sed -i "s/destpullbranch/$modified_dest_branch/g" /tmp/${process_id}_datareq.json
 sed -i "s/%/\//g" /tmp/${process_id}_datareq.json
 
 curl -s -u ${prUser}:${prPass} -H "Content-Type: application/json" $pull_url -X POST --data @/tmp/${process_id}_datareq.json 
