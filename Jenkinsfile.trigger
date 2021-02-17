@@ -13,7 +13,7 @@ node('docker_build') {
 
       properties([
         parameters([
-            string(defaultValue: '', description: 'Branch Name:', name: 'push_changes_0_new_name', trim: true),
+            string(defaultValue: 'develop', description: 'Branch Name:', name: 'push_changes_0_new_name', trim: true),
             string(defaultValue: '', description: 'Possible values: access-product-packaging core nrtric rt-monitoring uniperf pwconfig core-stacks 2g-stack pnf-vnf core-stacks-phy vru-4g-phy bbpms_bsp vru-2g-phy vru-3g-phy nodeh cws-rrh osmo2g', name: 'repository_slug', trim: true),
             string(defaultValue: '', description: 'New Hash:', name: 'push_changes_0_new_target_hash', trim: true),
             string(defaultValue: 'develop', description: 'For internal Use:', name: 'global_packaging_branch', trim: true),
@@ -23,9 +23,8 @@ node('docker_build') {
 
 
     def PW_BRANCH = "${push_changes_0_new_name}"
-    def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
-    def PW_REPOSITORY = "${repository_slug}"
-    def INTEG_BRANCH = "integ/${PW_REPOSITORY}/${PW_BRANCH}"
+    //def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
+    def commit_hash = ""
 
     def secrets = [
         [path: 'development/engsvcs/global-manifest-update', engineVersion: 2, secretValues: [[envVar: 'prPass', vaultKey: 'prPassword'],[envVar: 'prUser', vaultKey: 'prUser']]]
@@ -43,7 +42,7 @@ node('docker_build') {
         currentBuild.description = "Build ${repository_slug} on branch: ${PW_BRANCH}"
         def verCode = UUID.randomUUID().toString()
 
-        notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
+        //notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
 
@@ -86,9 +85,9 @@ node('docker_build') {
                                 retValue = sh(returnStatus: true, script: "pwd")
                                 retValue = sh(returnStatus: true, script: "git pull")
                                 def retr_build_job = "global-manifest-update"
-                                def short_commit_hash = sh (returnStdout: true , script: "git rev-parse HEAD").trim()               
+                                commit_hash = sh (returnStdout: true , script: "git rev-parse HEAD").trim()               
                   
-                                build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(short_commit_hash)), string(name: 'repository_slug', value: String.valueOf(mirror))], propagate: false, wait: false
+                                build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(commit_hash)), string(name: 'repository_slug', value: String.valueOf(mirror))], propagate: false, wait: false
 
                             }
                           }
@@ -104,8 +103,7 @@ node('docker_build') {
         }
         finally {
             cleanWs()
-            //notifySuccessful(pull_list)
-            notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
+            notifyBitbucket(commitSha1:"$commit_hash")
          }
       }
    }
