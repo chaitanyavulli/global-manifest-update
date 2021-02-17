@@ -23,7 +23,6 @@ node('docker_build') {
 
 
     def PW_BRANCH = "${push_changes_0_new_name}"
-    //def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
     def commit_hash = ""
 
     def secrets = [
@@ -41,8 +40,6 @@ node('docker_build') {
         println currentBuild.displayName
         currentBuild.description = "Build ${repository_slug} on branch: ${PW_BRANCH}"
         def verCode = UUID.randomUUID().toString()
-
-        //notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
 
