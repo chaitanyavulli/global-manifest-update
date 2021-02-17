@@ -26,6 +26,14 @@ node('docker_build') {
     def INTEG_BRANCH = "integ/${PW_REPOSITORY}/${PW_BRANCH}"
     def DEST_BRANCH = "${dest_branch}"
 
+    if ( DEST_BRANCH == "develop" || DEST_BRANCH == "integ/6_2_dev" ){
+        echo "Destination branch found - Continue."
+    } else {
+        echo "Destination branch is ${dest_branch} - stopping."
+        currentBuild.result = 'SUCCESS'
+        return
+    }
+
     def buildUser = getBuildUser()
     def secrets = [
         [path: 'development/engsvcs/global-manifest-update', engineVersion: 2, secretValues: [[envVar: 'prPass', vaultKey: 'prPassword'],[envVar: 'prUser', vaultKey: 'prUser']]]
