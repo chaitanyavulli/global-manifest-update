@@ -14,17 +14,12 @@ node('docker_build') {
       properties([
         parameters([
             string(defaultValue: 'develop', description: 'Branch Name:', name: 'push_changes_0_new_name', trim: true),
-            string(defaultValue: '', description: 'Possible values: access-product-packaging core nrtric rt-monitoring uniperf pwconfig core-stacks 2g-stack pnf-vnf core-stacks-phy vru-4g-phy bbpms_bsp vru-2g-phy vru-3g-phy nodeh cws-rrh osmo2g', name: 'repository_slug', trim: true),
-            string(defaultValue: '', description: 'New Hash:', name: 'push_changes_0_new_target_hash', trim: true),
             string(defaultValue: 'develop', description: 'PR Destination:', name: 'dest_branch', trim: true),
             string(defaultValue: 'develop', description: 'For internal Use:', name: 'global_packaging_branch', trim: true),
         ])
     ])
 
     def PW_BRANCH = "${push_changes_0_new_name}"
-    def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
-    def PW_REPOSITORY = "${repository_slug}"
-    def INTEG_BRANCH = "integ/${PW_REPOSITORY}/${PW_BRANCH}"
     def DEST_BRANCH = "${dest_branch}"
     def secrets = [
         [path: 'development/engsvcs/global-manifest-update', engineVersion: 2, secretValues: [[envVar: 'prPass', vaultKey: 'prPassword'],[envVar: 'prUser', vaultKey: 'prUser']]]
