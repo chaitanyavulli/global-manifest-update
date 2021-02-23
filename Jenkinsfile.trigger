@@ -15,8 +15,6 @@ node('docker_build') {
         parameters([
             string(defaultValue: 'develop', description: 'Branch Name:', name: 'push_changes_0_new_name', trim: true),
             string(defaultValue: 'develop', description: 'PR Destination:', name: 'dest_branch', trim: true),
-            string(defaultValue: '', name: 'repository_slug', trim: true),
-            string(defaultValue: '', description: 'New Hash:', name: 'push_changes_0_new_target_hash', trim: true),
             string(defaultValue: 'develop', description: 'For internal Use:', name: 'global_packaging_branch', trim: true),
         ])
     ])
@@ -34,9 +32,9 @@ node('docker_build') {
      timestamps {
         timeout(time: 3, unit: 'HOURS') {
 
-        currentBuild.displayName = "${BUILD_NUMBER}:${repository_slug}:${PW_BRANCH}"
+        currentBuild.displayName = "${BUILD_NUMBER}:${PW_BRANCH}"
         println currentBuild.displayName
-        currentBuild.description = "Build ${repository_slug} on branch: ${PW_BRANCH}"
+        currentBuild.description = "Build on : ${PW_BRANCH}"
         def verCode = UUID.randomUUID().toString()
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
@@ -83,14 +81,12 @@ node('docker_build') {
                                 commit_hash = sh (returnStdout: true , script: "git rev-parse HEAD").trim()               
                   
                                 build job: retr_build_job, parameters: [string(name: 'push_changes_0_new_name', value: String.valueOf(PW_BRANCH)), string(name: 'push_changes_0_new_target_hash', value: String.valueOf(commit_hash)), string(name: 'repository_slug', value: String.valueOf(mirror)), string(name: 'dest_branch', value: String.valueOf(DEST_BRANCH))], propagate: false, wait: false
-
                             }
-                          }
-                        }
+                         }
+                      }
                    }
                }
            }
-
         }
         catch (Exception Error) {
             currentBuild.result = 'FAILURE'
