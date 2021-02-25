@@ -137,7 +137,7 @@ node('docker_build') {
                     } 
                  }
              }
-        
+             /*
              stage('Tag Upstream Commit') {
                 dir("${verCode}/${PW_REPOSITORY}") {
                     retValue = sh(returnStatus:true, script: "git tag -a ${ci_tag} -m \"Automated Tag created by ${buildUser} for commit Hash: \" ${NEW_COMMIT_HASH}")
@@ -147,7 +147,7 @@ node('docker_build') {
                     sh(returnStatus:true, script: "git push origin --tags")
                 }
              }
-       
+            */
             stage ('Clone global-manifest-update Repo'){
                dir("${verCode}") {
                     def retryAttempt = 0
