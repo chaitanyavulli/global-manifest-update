@@ -229,17 +229,17 @@ node('docker_build') {
                             """
 
                             dir("${remote}"){
-                                retValue = sh(returnStatus: true, script: "pwd")
-                                retValue = sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${DEST_BRANCH}")
-                                retValue = sh(returnStatus: true, script: "git pull origin ${INTEG_BRANCH}")
-                                println retValue
-                                if (retValue == 1){
-                                    println "Branch not present. Pulling from develop"
-                                    retValue = sh(returnStatus: true, script: "git pull origin develop")
-                                }
+                                sh(returnStatus: true, script: "pwd")
+                                sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${DEST_BRANCH}")
                                 sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
                                 sh(returnStatus: true, script: "git commit -m 'tag-update commitID auto upgrade' manifest.json")
-                                sh(returnStatus: true, script: "git push --set-upstream origin ${INTEG_BRANCH}")
+                                retValue = sh(returnStatus: true, script: "git push --set-upstream origin ${INTEG_BRANCH}")
+                                if (retValue != 0){
+                                     println retValue
+                                     println "Warning: Push failed - one or more git commands failed..."
+                                     currentBuild.result = 'FAILURE'
+                                     return
+                                }
                                 pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} ${DEST_BRANCH} ${pull_api} ${remote} ${remote} ${buildUser}").trim()
                                 println pull_req
                                 def props = readJSON text:pull_req.toString(),returnPojo: true
