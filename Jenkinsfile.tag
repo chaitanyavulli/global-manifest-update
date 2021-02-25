@@ -35,6 +35,7 @@ node('docker_build') {
     }
 
     def buildUser = getBuildUser()
+    def packagingJob = getUpstreamJob()
     def secrets = [
         [path: 'development/engsvcs/global-manifest-update', engineVersion: 2, secretValues: [[envVar: 'prPass', vaultKey: 'prPassword'],[envVar: 'prUser', vaultKey: 'prUser']]]
 
@@ -79,7 +80,7 @@ node('docker_build') {
 
         def manifest_map = [
             'access-product-packaging': ['integrated-packaging'],
-            'core': ['access-product-packaging','integrated-packaging'],
+            'core': [packagingJob],
             'nrtric': ['integrated-packaging'],
             'rt-monitoring': ['integrated-packaging'],
             'uniperf': ['integrated-packaging'],
@@ -287,5 +288,18 @@ def getBuildUser() {
         return currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
     } else{
         return 'parallel'
+    }
+}
+def getUpstreamJob() {
+    if (currentBuild.rawBuild.getCause(Cause.UpstreamCause) != null){ 
+        if (currentBuild.rawBuild.getCause(Cause.UpstreamCause).toString().contains('core-access')){
+            return "access-product-packaging"
+        } else if (currentBuild.rawBuild.getCause(Cause.UpstreamCause).toString().contains('hng-pipeline')){
+            return "integrated-packaging"
+        } else {
+            println "Job started by upstream"
+        }    
+    } else {
+        println "Job not started by upstream"
     }
 }
