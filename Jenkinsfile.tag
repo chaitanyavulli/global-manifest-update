@@ -133,7 +133,7 @@ node('docker_build') {
                         cd ${PW_REPOSITORY}
                         git init
                         git remote add origin ${mirror}
-                        git fetch
+                        git fetch --all
                         """
                     } 
                  }
@@ -148,8 +148,15 @@ node('docker_build') {
                     sh(returnStatus:true, script: "git push origin --tags")
                 }
              }
-            */
-            stage ('Clone global-manifest-update Repo'){
+             */
+             stage('Upstream commit message') {
+                dir("${verCode}/${PW_REPOSITORY}") {
+                    env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "git log --pretty=format:%s -n 1 ${NEW_COMMIT_HASH}").trim()
+                    env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "echo ${PW_REPOSITORY} commit message is: ${GIT_COMMIT_MSG}").trim()
+                    echo "${env.GIT_COMMIT_MSG}"
+                }
+             }
+             stage ('Clone global-manifest-update Repo'){
                dir("${verCode}") {
                     def retryAttempt = 0
                     retry(2) {
@@ -171,7 +178,6 @@ node('docker_build') {
                    }
                }
             }
-
             stage ('Check Upstream Artifact'){
                  dir("${verCode}/global-packaging") {
 
@@ -206,7 +212,6 @@ node('docker_build') {
                      }
                  }
             }
-
              stage('Update Manifest Files') {
                 dir("${verCode}") {
                     def retryAttempt = 0
@@ -241,8 +246,9 @@ node('docker_build') {
                                      currentBuild.result = 'FAILURE'
                                      return
                                 }
-                                pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} ${DEST_BRANCH} ${pull_api} ${remote} ${remote} ${buildUser}").trim()
+                                pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} ${DEST_BRANCH} ${pull_api} ${remote} ${remote} ${buildUser} '${GIT_COMMIT_MSG}'").trim()
                                 println pull_req
+                                /*
                                 def props = readJSON text:pull_req.toString(),returnPojo: true
 
                                 if ( props['errors'] != null ){
@@ -251,6 +257,7 @@ node('docker_build') {
                                 } else { println props.links.self[0].href
                                    pull_list.add(props.links.self[0].href)
                                 }
+                                */
                             }
                         }
                     }
