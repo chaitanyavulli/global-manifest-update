@@ -11,11 +11,14 @@ plugins used in Jenkinsfile
 node('docker_build') {
 
     properties([
+        buildDiscarder(
+            logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '10', numToKeepStr: '')
+        ),
         parameters([
             string(defaultValue: '', description: 'Branch Name:', name: 'push_changes_0_new_name', trim: true),
             string(defaultValue: '', description: 'Repository Name: (Possible values: access-product-packaging core nrtric rt-monitoring uniperf pwconfig core-stacks 2g-stack pnf-vnf core-stacks-phy vru-4g-phy bbpms_bsp vru-2g-phy vru-3g-phy nodeh cws-rrh osmo2g)', name: 'repository_slug', trim: true),
             string(defaultValue: '', description: 'New Hash:', name: 'push_changes_0_new_target_hash', trim: true),
-            string(defaultValue: 'develop', description: 'PR Destination:', name: 'dest_branch', trim: true),
+            string(defaultValue: '', description: 'PR Destination:', name: 'dest_branch', trim: true),
             string(defaultValue: 'develop', description: 'For internal Use:', name: 'global_packaging_branch', trim: true),
         ])
     ])
