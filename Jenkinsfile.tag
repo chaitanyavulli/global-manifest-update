@@ -25,6 +25,7 @@ node('docker_build') {
 
     def PW_BRANCH = "${push_changes_0_new_name}"
     def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
+    def NEW_COMMIT_SHORT=NEW_COMMIT_HASH.take(8)
     def PW_REPOSITORY = "${repository_slug}"
     def INTEG_BRANCH = "integ/${PW_REPOSITORY}/${PW_BRANCH}"
     def DEST_BRANCH = "${dest_branch}"
@@ -154,8 +155,7 @@ node('docker_build') {
              */
              stage('Upstream commit message') {
                 dir("${verCode}/${PW_REPOSITORY}") {
-                    env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "git log --pretty=format:%s -n 1 ${NEW_COMMIT_HASH}").trim()
-                    env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "echo ${PW_REPOSITORY} commit message is: ${GIT_COMMIT_MSG}").trim()
+                    env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "echo ${PW_REPOSITORY} commit message is: `git log --pretty=format:%s -n 1 ${NEW_COMMIT_HASH}`").trim()
                     echo "${env.GIT_COMMIT_MSG}"
                 }
              }
@@ -241,13 +241,13 @@ node('docker_build') {
                                 sh(returnStatus: true, script: "pwd")
                                 sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${DEST_BRANCH}")
                                 sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
-                                sh(returnStatus: true, script: "git commit -m 'tag-update commitID auto upgrade' manifest.json")
+                                sh(returnStatus: true, script: "git commit -m 'Auto update ${PW_REPOSITORY} to ${NEW_COMMIT_SHORT}' manifest.json")
                                 retValue = sh(returnStatus: true, script: "git push --set-upstream -f origin ${INTEG_BRANCH}")
                                 if (retValue != 0){
-                                     println retValue
-                                     println "Warning: Push failed - one or more git commands failed..."
-                                     currentBuild.result = 'FAILURE'
-                                     return
+                                    println retValue
+                                    println "Warning: Push failed - one or more git commands failed..."
+                                    currentBuild.result = 'FAILURE'
+                                    return
                                 }
                                 pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} ${DEST_BRANCH} ${pull_api} ${remote} ${remote} ${buildUser} '${GIT_COMMIT_MSG}'").trim()
                                 println pull_req
