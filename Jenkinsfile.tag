@@ -30,14 +30,6 @@ node('docker_build') {
     def INTEG_BRANCH = "integ/${PW_REPOSITORY}/${PW_BRANCH}"
     def DEST_BRANCH = "${dest_branch}"
 
-    if ( DEST_BRANCH == "develop" || DEST_BRANCH == "integ/6_2_dev" ){
-        echo "Destination branch found - Continue."
-    } else {
-        echo "Destination branch is ${dest_branch} - stopping."
-        currentBuild.result = 'SUCCESS'
-        return
-    }
-
     def buildUser = getBuildUser()
     def packagingJob = getUpstreamJob()
     def secrets = [
@@ -111,7 +103,22 @@ node('docker_build') {
             'access-product-packaging'  : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/access-product-packaging/pull-requests',
             'integrated-packaging'      : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/integrated-packaging/pull-requests'
             ]
-
+                
+        if ( DEST_BRANCH == "develop" || DEST_BRANCH == "integ/6_2_dev" || DEST_BRANCH.startsWith("feature") ){
+            def packaging_repo = manifest_map[PW_REPOSITORY][0]
+            retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/${dest_branch}")
+            if ( retValue == 0 ){
+                echo "Destination branch found in the ${packaging_repo} repo - Continue."
+            } else {
+                echo "Destination branch is ${dest_branch} - does not exist on the packaging repo - stopping."
+                currentBuild.result = 'SUCCESS'
+                return
+            }
+        } else {
+            echo "Destination branch is ${dest_branch} - is not part of the governed branches - stopping."
+            currentBuild.result = 'SUCCESS'
+            return
+        }
 
         def mirror = ''
         def pull_api = ''
