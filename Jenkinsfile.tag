@@ -48,8 +48,6 @@ node('docker_build') {
         currentBuild.description = "Build ${repository_slug} on branch: ${PW_BRANCH}"
         def verCode = UUID.randomUUID().toString()
 
-        notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
-
         def trigger_downstream_job = true
         def git_remotes = [
             'access-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/access-product-packaging.git',
@@ -120,6 +118,7 @@ node('docker_build') {
             return
         }
 
+        notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
         def mirror = ''
         def pull_api = ''
         def pull_req = ''
@@ -258,7 +257,7 @@ node('docker_build') {
                                 }
                                 pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} ${DEST_BRANCH} ${pull_api} ${remote} ${remote} ${buildUser} '${GIT_COMMIT_MSG}'").trim()
                                 println pull_req
-                                /*
+            
                                 def props = readJSON text:pull_req.toString(),returnPojo: true
 
                                 if ( props['errors'] != null ){
@@ -267,7 +266,7 @@ node('docker_build') {
                                 } else { println props.links.self[0].href
                                    pull_list.add(props.links.self[0].href)
                                 }
-                                */
+                                
                             }
                         }
                     }
