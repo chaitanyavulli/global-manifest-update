@@ -12,8 +12,8 @@ process_id=`cat /dev/urandom | tr -dc '0-9' | fold -w 256 | head -n 1 | sed -e '
 cat > /tmp/${process_id}_datareq.json <<EOF
 
   {
-    "title": "Automatic PR created from $integ_branch by $pr_user",
-    "description": "commitmessage",
+    "title": "commitmessage",
+    "description": "Automatic PR created from $integ_branch by $pr_user",
     "state": "OPEN",
     "open": true,
     "closed": false,
