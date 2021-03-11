@@ -41,7 +41,7 @@ node('docker_build') {
                          engineVersion: 2]
     withVault([configuration: configuration, vaultSecrets: secrets]) {
     timestamps {
-        timeout(time: 3, unit: 'HOURS') {
+        timeout(time: 1, unit: 'HOURS') {
 
         currentBuild.displayName = "${BUILD_NUMBER}:${repository_slug}:${PW_BRANCH}"
         println currentBuild.displayName
@@ -262,6 +262,11 @@ node('docker_build') {
 
                                 if ( props['errors'] != null ){
                                    println props.errors[0].existingPullRequest.links.self[0].href
+                                   def ID = props.errors[0].existingPullRequest.id
+                                   def VERSION = props.errors[0].existingPullRequest.version
+                                   pull_api = sh(returnStdout : true, script: "echo ${pull_api}/${ID}").trim()
+                                   pull_req = sh(returnStdout : true, script: "sh ../global-packaging/PullReqUpdate.sh ${INTEG_BRANCH} ${pull_api} ${buildUser} '${GIT_COMMIT_MSG}' ${ID} ${VERSION}").trim()
+                                   println pull_req
                                    pull_list.add(props.errors[0].existingPullRequest.links.self[0].href)
                                 } else { println props.links.self[0].href
                                    pull_list.add(props.links.self[0].href)
