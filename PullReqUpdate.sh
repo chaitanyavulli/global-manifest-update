@@ -11,7 +11,7 @@ commit_msg=$4
 id=$5
 version=$6
 
-process_id=`cat /dev/urandom | tr -dc '0-9' | fold -w 256 | head -n 1 | sed -e 's/^0*//' | head --bytes 10`
+process_id=`echo $RANDOM`
 cat > /tmp/${process_id}_datareq.json <<EOF
 
   {
