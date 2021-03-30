@@ -281,6 +281,7 @@ node('docker_build') {
         }
         catch (Exception Error) {
             currentBuild.result = 'FAILURE'
+            notifyFailure()
             throw Error
         }
         finally {
@@ -292,13 +293,12 @@ node('docker_build') {
  }
 }
 
-def notifySuccessful() {
+def notifyFailure() {
      emailext (
-         attachLog: true,
-         subject: "Manifest file updated",
-         body: "Manifest file updated",
+         subject: "[${currentBuild.result}] - ${env.JOB_NAME} - Build #${BUILD_NUMBER}",
+         body: "<b>Build URL:</b> ${env.BUILD_URL}<br>",
          mimeType: 'text/html',
-         recipientProviders: [developers(), requestor()]
+         to: "vbuslovich@parallelwireless.com"
     )
 }
 
