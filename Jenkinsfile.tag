@@ -299,7 +299,7 @@ def notifyFailure() {
          subject: "[${currentBuild.result}] - ${env.JOB_NAME} - Build #${BUILD_NUMBER}",
          body: "<b>Build URL:</b> ${env.BUILD_URL}<br>",
          mimeType: 'text/html',
-         to: "vbuslovich@parallelwireless.com"
+         to: "vbuslovich@parallelwireless.com , akliner@parallelwireless.com"
     )
 }
 
