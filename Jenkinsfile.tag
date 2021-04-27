@@ -103,7 +103,7 @@ node('docker_build') {
             'integrated-packaging'      : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/integrated-packaging/pull-requests'
             ]
                 
-        if ( DEST_BRANCH == "develop" || DEST_BRANCH == "integ/6_2_dev" || DEST_BRANCH.startsWith("feature") || DEST_BRANCH.startsWith("release") ){
+        if ( DEST_BRANCH == "develop" || DEST_BRANCH == "integ/6_2_dev" || DEST_BRANCH.startsWith("feature") || DEST_BRANCH.startsWith("release") || DEST_BRANCH == "integ/REL_6.1.1" || DEST_BRANCH == "integ/REL_6.1.2" ){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
             retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/${dest_branch}")
             if ( retValue == 0 ){
