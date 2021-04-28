@@ -102,19 +102,25 @@ node('docker_build') {
             'access-product-packaging'  : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/access-product-packaging/pull-requests',
             'integrated-packaging'      : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/integrated-packaging/pull-requests'
             ]
-                
+
+        //special case: access-packaging = release/REL_vBBU_6.1.x , hng = release/REL_HNG_6.1.x , integrated-packaging = release/REL_6.1.x
+        if (( DEST_BRANCH == "release/REL_vBBU_6.1.x" && PW_REPOSITORY == "access-product-packaging" ) || ( DEST_BRANCH == "release/REL_HNG_6.1.x" && PW_REPOSITORY == "core" )){
+            echo "Changing the destination branch to be release/REL_6.1.x"
+            DEST_BRANCH = "release/REL_6.1.x"
+        }
+
         if ( DEST_BRANCH == "develop" || DEST_BRANCH == "integ/6_2_dev" || DEST_BRANCH.startsWith("feature") || DEST_BRANCH.startsWith("release") || DEST_BRANCH == "integ/REL_6.1.1" || DEST_BRANCH == "integ/REL_6.1.2" ){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
-            retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/${dest_branch}")
+            retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/${DEST_BRANCH}")
             if ( retValue == 0 ){
                 echo "Destination branch found in the ${packaging_repo} repo - Continue."
             } else {
-                echo "Destination branch is ${dest_branch} - does not exist on the packaging repo - stopping."
+                echo "Destination branch is ${DEST_BRANCH} - does not exist on the packaging repo - stopping."
                 currentBuild.result = 'SUCCESS'
                 return
             }
         } else {
-            echo "Destination branch is ${dest_branch} - is not part of the governed branches - stopping."
+            echo "Destination branch is ${DEST_BRANCH} - is not part of the governed branches - stopping."
             currentBuild.result = 'SUCCESS'
             return
         }
