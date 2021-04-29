@@ -26,7 +26,7 @@ node('docker_build') {
     def PW_BRANCH = "${push_changes_0_new_name}"
     def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
     def PW_REPOSITORY = "${repository_slug}"
-    def INTEG_BRANCH = "integ/${PW_REPOSITORY}/${PW_BRANCH}"
+    def INTEG_BRANCH = "private/${PW_REPOSITORY}/${PW_BRANCH}"
     def DEST_BRANCH = "${dest_branch}"
 
     def buildUser = getBuildUser()
@@ -109,7 +109,7 @@ node('docker_build') {
             DEST_BRANCH = "release/REL_6.1.x"
         }
 
-        if ( DEST_BRANCH == "develop" || DEST_BRANCH == "integ/6_2_dev" || DEST_BRANCH.startsWith("feature") || DEST_BRANCH.startsWith("release") || DEST_BRANCH == "integ/REL_6.1.1" || DEST_BRANCH == "integ/REL_6.1.2" ){
+        if ( DEST_BRANCH == "develop" || DEST_BRANCH.startsWith("integ") || DEST_BRANCH.startsWith("feature") || DEST_BRANCH.startsWith("release") ){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
             retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/${DEST_BRANCH}")
             if ( retValue == 0 ){
