@@ -171,6 +171,8 @@ node('docker_build') {
                     env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "echo ${PW_REPOSITORY} commit message is: `git log --pretty=format:%s -n 1 ${NEW_COMMIT_HASH}`").trim()
                     echo "${env.GIT_COMMIT_MSG}"
                     env.GIT_COMMIT_MSG="${GIT_COMMIT_MSG}".replace("\"", "") //Remove any double quotes for the JSON pull request creation
+                    env.AUTHOR_EMAIL = sh(returnStdout:true, script: "git log --format='%ae' -n 1 ${NEW_COMMIT_HASH}").trim()
+                    echo "${env.AUTHOR_EMAIL}"
                 }
              }
              stage ('Clone global-manifest-update Repo'){
@@ -213,6 +215,7 @@ node('docker_build') {
                      catch(Exception ex) {
 
                         println "Exception occure"
+                        notifyFailure()
                         throw ex
                      }
 
@@ -261,6 +264,7 @@ node('docker_build') {
                                     println retValue
                                     println "Warning: Push failed - one or more git commands failed..."
                                     currentBuild.result = 'FAILURE'
+                                    notifyFailure()
                                     return
                                 }
                                 pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} ${DEST_BRANCH} ${pull_api} ${remote} ${remote} ${buildUser} '${GIT_COMMIT_MSG}'").trim()
@@ -307,7 +311,7 @@ def notifyFailure() {
          subject: "[${currentBuild.result}] - ${env.JOB_NAME} - Build #${BUILD_NUMBER}",
          body: "<b>Build URL:</b> ${env.BUILD_URL}<br>",
          mimeType: 'text/html',
-         to: "vbuslovich@parallelwireless.com , akliner@parallelwireless.com"
+         to: "${env.AUTHOR_EMAIL} , vbuslovich@parallelwireless.com , akliner@parallelwireless.com"
     )
 }
 
