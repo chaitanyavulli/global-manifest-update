@@ -104,9 +104,11 @@ node('docker_build') {
             ]
 
         //special case: access-packaging = release/REL_vBBU_6.1.x , hng = release/REL_HNG_6.1.x , integrated-packaging = release/REL_6.1.x
-        if (( DEST_BRANCH == "release/REL_vBBU_6.1.x" && PW_REPOSITORY == "access-product-packaging" ) || ( DEST_BRANCH == "release/REL_HNG_6.1.x" && PW_REPOSITORY == "core" )){
-            echo "Changing the destination branch to be release/REL_6.1.x"
-            DEST_BRANCH = "release/REL_6.1.x"
+        //x can be 0,1,2,3,4,5...
+        if (( DEST_BRANCH.startsWith("release/REL_vBBU_6.1.") && PW_REPOSITORY == "access-product-packaging" ) || ( DEST_BRANCH.startsWith("release/REL_HNG_6.1.") && PW_REPOSITORY == "core" )){
+            echo "Changing the destination branch to be release/REL_6.1. and the last char of the branch provided"
+            DEST_BRANCH = "release/REL_6.1."+DEST_BRANCH[-1]
+            println DEST_BRANCH
         }
 
         if ( DEST_BRANCH == "develop" || DEST_BRANCH.startsWith("integ") || DEST_BRANCH.startsWith("feature") || DEST_BRANCH.startsWith("release") ){
