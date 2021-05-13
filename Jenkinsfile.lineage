@@ -1,0 +1,115 @@
+#!/user/bin/env groovy
+
+node('docker_build') {
+
+    properties([
+        buildDiscarder(
+            logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '5', numToKeepStr: '')
+        ),
+        parameters([
+            string(defaultValue: '', description: 'Branch Name:', name: 'push_changes_0_new_name', trim: true),
+            string(defaultValue: '', description: 'Repository Name: ', name: 'repository_slug', trim: true),
+            string(defaultValue: '', description: 'New Hash:', name: 'push_changes_0_new_target_hash', trim: true),
+            string(defaultValue: 'develop', description: 'For internal Use:', name: 'global_packaging_branch', trim: true),
+        ])
+    ])
+
+    def BRANCH = "${push_changes_0_new_name}"
+    def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
+
+    timestamps {
+        timeout(time: 1, unit: 'HOURS') {
+
+        currentBuild.displayName = "${BUILD_NUMBER}:${repository_slug}:${BRANCH}"
+        println currentBuild.displayName
+        currentBuild.description = "Build ${repository_slug} on branch: ${BRANCH}"
+        def verCode = UUID.randomUUID().toString()
+        def target_artfact_dir="pw-products/${repository_slug}/${push_changes_0_new_name}"
+        //notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
+
+        try {
+             stage ('Clone global-manifest-update Repo'){
+               dir("${verCode}") {
+                    def retryAttempt = 0
+                    retry(2) {
+                        if (retryAttempt > 0) {
+                            sleep 60
+                        }
+                        retryAttempt = retryAttempt + 1
+                            sh """
+                            pwd
+                            rm -rf global-manifest-update
+                            mkdir global-manifest-update
+                            cd global-manifest-update
+                            git init
+                            git remote add origin ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git
+                            git fetch --no-tags
+                            git checkout -b ${global_packaging_branch}
+                            git pull origin ${global_packaging_branch}
+                            """
+                   }
+               }
+             }
+            stage('Clone Packaging Repo') {
+                dir("${verCode}") {
+                    def retryAttempt = 0
+                    retry(2) {
+                        if (retryAttempt > 0) {
+                            sleep 60
+                        }
+                        retryAttempt = retryAttempt + 1
+                        sh """
+                        rm -rf ${repository_slug}
+                        mkdir ${repository_slug}
+                        cd ${repository_slug}
+                        git init
+                        git remote add origin ssh://git@git.parallelwireless.net:7999/cd/${repository_slug}.git
+                        git fetch --no-tags
+                        git checkout -f ${push_changes_0_new_target_hash}
+                        """
+                    }
+                    env.commit_hash_date = sh(
+                        label: "Git commit hash and date",
+                        returnStdout: true,
+                        script:"cd ${repository_slug} ; TZ=UTC git log --format=format:%cd-%h --date=format-local:%Y-%m-%d-%H-%M -n 1"
+                        ).trim()
+                }
+            }
+            stage('Lineage') {
+               dir("${verCode}/global-manifest-update") {
+                sh """
+                pwd
+                python -u lineage.py ../${repository_slug}/manifest.json 
+                """
+               }
+            }
+            stage('Publish') {
+                    def server = Artifactory.server("production artifactory")
+
+                    def uploadSpec = """\
+                    {
+                        "files": [
+                            {
+                                "pattern": "**/lineage*.html",
+                                "target": "${target_artfact_dir}/${commit_hash_date}/"
+                            }
+                        ]
+                    }"""
+
+                    def buildInfo = server.upload(spec: uploadSpec)
+                    server.publishBuildInfo(buildInfo)
+        }//publish
+            currentBuild.result = 'SUCCESS'
+        }
+        catch (Exception Error) {
+            currentBuild.result = 'FAILURE'
+            throw Error
+        }
+        finally {
+            archiveArtifacts artifacts: '**/lineage*.html', allowEmptyArchive: true
+            cleanWs()
+            //notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
+        }
+    }
+  }
+}
