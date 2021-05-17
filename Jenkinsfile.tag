@@ -67,8 +67,9 @@ node('docker_build') {
             'nodeh': 'ssh://git@git.parallelwireless.net:7999/cd/nodeh.git',
             'cws-rrh': 'ssh://git@git.parallelwireless.net:7999/cd/cws-rrh.git',
             'osmo2g': 'ssh://git@git.parallelwireless.net:7999/cd/osmo2g.git',
-            'access-iso': 'ssh://git@git.parallelwireless.net:7999/pwis/access-iso.git'
-            ]
+            'access-iso': 'ssh://git@git.parallelwireless.net:7999/pwis/access-iso.git',
+            'pwems-platform': 'ssh://git@git.parallelwireless.net:7999/cd/pwems-platform.git'
+		 ]
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
 
@@ -90,8 +91,9 @@ node('docker_build') {
             'nodeh': ['access-product-packaging'],
             'cws-rrh': ['access-product-packaging'],
             'osmo2g': ['access-product-packaging'],
-            'access-iso': ['access-product-packaging']
-            ]
+            'access-iso': ['access-product-packaging'],
+            'pwems-platform': ['integrated-packaging']
+		 ]
 
         def build_jobs = [
             'core': 'hng-pipeline',
