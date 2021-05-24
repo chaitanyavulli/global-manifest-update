@@ -175,6 +175,7 @@ node('docker_build') {
                     env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "echo ${PW_REPOSITORY} commit message is: `git log --pretty=format:%s -n 1 ${NEW_COMMIT_HASH}`").trim()
                     echo "${env.GIT_COMMIT_MSG}"
                     env.GIT_COMMIT_MSG="${GIT_COMMIT_MSG}".replace("\"", "") //Remove any double quotes for the JSON pull request creation
+                    env.GIT_COMMIT_MSG="${GIT_COMMIT_MSG}".replace("\'", "") //Remove any single quotes for the JSON pull request creation
                     env.AUTHOR_EMAIL = sh(returnStdout:true, script: "git log --format='%ae' -n 1 ${NEW_COMMIT_HASH}").trim()
                     echo "${env.AUTHOR_EMAIL}"
                 }
