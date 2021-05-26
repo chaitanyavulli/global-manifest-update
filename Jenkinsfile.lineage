@@ -16,7 +16,6 @@ node('docker_build') {
 
     def BRANCH = "${push_changes_0_new_name}"
     def NEW_COMMIT_HASH = "${push_changes_0_new_target_hash}"
-
     timestamps {
         timeout(time: 1, unit: 'HOURS') {
 
@@ -90,7 +89,7 @@ node('docker_build') {
                     {
                         "files": [
                             {
-                                "pattern": "**/lineage*.html",
+                                "pattern": "**/release_notes_*.html",
                                 "target": "${target_artfact_dir}/${commit_hash_date}/"
                             }
                         ]
@@ -106,7 +105,7 @@ node('docker_build') {
             throw Error
         }
         finally {
-            archiveArtifacts artifacts: '**/lineage*.html', allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/release_notes_*.html', allowEmptyArchive: true
             cleanWs()
             //notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
         }
