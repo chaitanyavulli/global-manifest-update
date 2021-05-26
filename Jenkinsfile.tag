@@ -263,7 +263,13 @@ node('docker_build') {
                                 sh(returnStatus: true, script: "pwd")
                                 sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${DEST_BRANCH}")
                                 sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
-                                sh(returnStatus: true, script: "git commit -m '${env.GIT_COMMIT_MSG}' manifest.json")
+                                retValue = sh(returnStatus: true, script: "git commit -m '${env.GIT_COMMIT_MSG}' manifest.json")
+                                if (retValue != 0){
+                                    println retValue
+                                    println "Warning: nothing to commit..."
+                                    currentBuild.result = 'SUCCESS'
+                                    return
+                                }
                                 retValue = sh(returnStatus: true, script: "git push --set-upstream -f origin ${INTEG_BRANCH}")
                                 if (retValue != 0){
                                     println retValue
