@@ -262,7 +262,27 @@ node('docker_build') {
                             dir("${remote}"){
                                 sh(returnStatus: true, script: "pwd")
                                 sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${DEST_BRANCH}")
-                                sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
+                                
+                                def CURRENT_COMMIT_HASH = ""
+                                def data = readJSON file: "manifest.json"
+                                    println "data: $data"
+                                data.each { k, v ->
+                                    v.each {
+                                        it.each{ keys, values ->
+                                            if (keys.contains(PW_REPOSITORY)){
+                                                CURRENT_COMMIT_HASH = values
+                                                println "OLD_COMMIT_HASH: $CURRENT_COMMIT_HASH"
+                                            }
+                                        }
+                                    }
+ 
+                                } 
+                                println "OLD_COMMIT_HASH: $CURRENT_COMMIT_HASH"
+                                def currentTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${CURRENT_COMMIT_HASH}").trim()
+                                def newTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${NEW_COMMIT_HASH}").trim()
+                                if (currentTimestamp < newTimestamp) {
+                                    sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
+                                }
                                 sh(returnStatus: true, script: "git commit -m '${env.GIT_COMMIT_MSG}' manifest.json")
                                 retValue = sh(returnStatus: true, script: "git push --set-upstream -f origin ${INTEG_BRANCH}")
                                 if (retValue != 0){
