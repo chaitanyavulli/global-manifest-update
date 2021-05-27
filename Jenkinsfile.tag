@@ -282,10 +282,6 @@ node('docker_build') {
                                     def currentTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${CURRENT_COMMIT_HASH}").trim()
                                     def newTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${NEW_COMMIT_HASH}").trim()
                                 }
-                                sh """
-                                pwd
-                                cd ${remote}
-                                """
                                 if (currentTimestamp < newTimestamp) {
                                     sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
                                 } else {
