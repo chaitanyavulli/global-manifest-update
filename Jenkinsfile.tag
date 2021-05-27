@@ -264,6 +264,8 @@ node('docker_build') {
                                 sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${DEST_BRANCH}")
                                 
                                 def CURRENT_COMMIT_HASH = ""
+                                def currentTimestamp = ""
+                                def newTimestamp = ""
                                 def data = readJSON file: "manifest.json"
                                     println "data: $data"
                                 data.each { k, v ->
@@ -279,8 +281,8 @@ node('docker_build') {
                                 } 
                                 println "OLD_COMMIT_HASH: $CURRENT_COMMIT_HASH"
                                 dir("../${PW_REPOSITORY}"){
-                                    def currentTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${CURRENT_COMMIT_HASH}").trim()
-                                    def newTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${NEW_COMMIT_HASH}").trim()
+                                    currentTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${CURRENT_COMMIT_HASH}").trim()
+                                    newTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${NEW_COMMIT_HASH}").trim()
                                 }
                                 if (currentTimestamp < newTimestamp) {
                                     sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
