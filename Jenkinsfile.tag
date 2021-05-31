@@ -272,7 +272,7 @@ node('docker_build') {
                                 data.each { k, v ->
                                     v.each {
                                         it.each{ keys, values ->
-                                            if (keys.contains(PW_REPOSITORY)){
+                                            if (keys.equals(PW_REPOSITORY)){
                                                 CURRENT_COMMIT_HASH = values
                                                 println "OLD_COMMIT_HASH: $CURRENT_COMMIT_HASH"
                                             }
