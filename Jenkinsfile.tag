@@ -267,8 +267,9 @@ node('docker_build') {
                                 def CURRENT_COMMIT_HASH = ""
                                 def currentTimestamp = ""
                                 def newTimestamp = ""
-                                def data = readJSON file: "manifest.json"
+                                Map data = readJSON file: "manifest.json"
                                     println "data: $data"
+                                    println(data.getClass())
                                 data.each { k, v ->
                                     v.each {
                                         it.each{ keys, values ->
@@ -278,9 +279,7 @@ node('docker_build') {
                                             }
                                         }
                                     }
- 
                                 } 
-                                println "OLD_COMMIT_HASH: $CURRENT_COMMIT_HASH"
                                 dir("../${PW_REPOSITORY}"){
                                     currentTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${CURRENT_COMMIT_HASH}").trim()
                                     newTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${NEW_COMMIT_HASH}").trim()
