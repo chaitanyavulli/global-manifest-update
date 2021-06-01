@@ -8,6 +8,9 @@ plugins used in Jenkinsfile
 - Workspace Cleanup Plugin (cleanWs)
 - org.jenkinsci.plugins.pipeline.modeldefinition.Utils to skipspecific stages
 */
+
+import groovy.json.JsonSlurper
+
 node('docker_build') {
 
     properties([
@@ -263,7 +266,34 @@ node('docker_build') {
                             dir("${remote}"){
                                 sh(returnStatus: true, script: "pwd")
                                 sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${DEST_BRANCH}")
-                                sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
+                                
+                                def CURRENT_COMMIT_HASH = ""
+                                def currentTimestamp = ""
+                                def newTimestamp = ""
+
+                                def data = readJSON file: "manifest.json"
+                                    println "data: $data"
+                                    println(data.getClass())
+                                data.each { k, v ->
+                                    v.each {
+                                        it.each{ keys, values ->
+                                            if (keys.equals(PW_REPOSITORY.trim())){
+                                                CURRENT_COMMIT_HASH = values
+                                                println "OLD_COMMIT_HASH: $CURRENT_COMMIT_HASH"
+                                            }
+                                        }
+                                    }
+                                } 
+                                dir("../${PW_REPOSITORY}"){
+                                    currentTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${CURRENT_COMMIT_HASH}").trim()
+                                    newTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${NEW_COMMIT_HASH}").trim()
+                                }
+                                if (currentTimestamp < newTimestamp) {
+                                    sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
+                                } else {
+                                    println "Warning: a latest commit hash time is already updated..."
+                                    return
+                                }
                                 retValue = sh(returnStatus: true, script: "git commit -m '${env.GIT_COMMIT_MSG}' manifest.json")
                                 if (retValue != 0){
                                     println retValue
