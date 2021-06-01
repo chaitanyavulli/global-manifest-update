@@ -8,6 +8,9 @@ plugins used in Jenkinsfile
 - Workspace Cleanup Plugin (cleanWs)
 - org.jenkinsci.plugins.pipeline.modeldefinition.Utils to skipspecific stages
 */
+
+import groovy.json.JsonSlurper
+
 node('docker_build') {
 
     properties([
@@ -267,13 +270,14 @@ node('docker_build') {
                                 def CURRENT_COMMIT_HASH = ""
                                 def currentTimestamp = ""
                                 def newTimestamp = ""
-                                Map data = readJSON file: "manifest.json"
+
+                                def data = readJSON file: "manifest.json"
                                     println "data: $data"
                                     println(data.getClass())
                                 data.each { k, v ->
                                     v.each {
                                         it.each{ keys, values ->
-                                            if (keys.equals(PW_REPOSITORY)){
+                                            if (keys.equals(PW_REPOSITORY.trim())){
                                                 CURRENT_COMMIT_HASH = values
                                                 println "OLD_COMMIT_HASH: $CURRENT_COMMIT_HASH"
                                             }
