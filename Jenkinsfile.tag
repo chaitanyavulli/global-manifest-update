@@ -289,9 +289,7 @@ node('docker_build') {
                                     newTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${NEW_COMMIT_HASH}").trim()
                                 }
                                 if (currentTimestamp < newTimestamp) {
-                                    //sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
-                                    println("Pw_Repository:" + PW_REPOSITORY + " : " + NEW_COMMIT_HASH)
-                                    return
+                                    sh(returnStatus: true, script: "sed -e 's/\"${PW_REPOSITORY}\": \".*\"/\"${PW_REPOSITORY}\": \"${NEW_COMMIT_HASH}\"/' --in-place manifest.json")
                                 } else {
                                     println "Warning: a latest commit hash time is already updated..."
                                     return
