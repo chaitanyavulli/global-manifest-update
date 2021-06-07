@@ -15,11 +15,18 @@ if len(HASH) != 40:
     print('ERROR: expecting 40 chars... Failing...')
     sys.exit(1)
 git_url="ssh://git@git.parallelwireless.net:7999"
-#clone_depth=os.getenv('clone_depth')
-clone_depth='50'
-branch_order = ['origin/release*','origin/develop*','origin/feature*','origin/integ*','origin/private*','origin/bugfix*']
+
+BRANCH = os.getenv('push_changes_0_new_name')
+if BRANCH == 'develop':
+    branch_order = ['origin/develop*','origin/release*','origin/feature*','origin/integ*','origin/private*','origin/bugfix*']
+else:
+    branch_order = ['origin/release*','origin/develop*','origin/feature*','origin/integ*','origin/private*','origin/bugfix*']
 
 packaging_lsts = []
+
+pipe = sp.Popen(["cd ../"+REPO+" ; git log -1 --pretty=format:%s"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
+main_commit = pipe.communicate()
+print main_commit[0]
 
 def clone(repository,sha1):
     repo_lsts = []
@@ -57,11 +64,23 @@ def clone(repository,sha1):
 
     pipe = sp.Popen(["git log -1 --pretty=format:%s"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
     commit = pipe.communicate()
-    print commit[0]
+    commit = commit[0]
+    print commit
+    
+    test=commit.split(':')
+    for t in test:
+        if t in main_commit[0]:
+            print 'found commit - to bold'
+            commit='<b>'+commit+'</b>'
+            break
 
-    pipe = sp.Popen(["git log -1 --pretty=format:%cd"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
+    pipe = sp.Popen(["TZ=UTC git log -1 --format=%cd --date=iso-local"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
     date = pipe.communicate()
     print date[0]
+
+    pipe = sp.Popen(["git log -1 --pretty=format:%an"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
+    author = pipe.communicate()
+    print author[0]
     
     for b in branch_order:
         pipe = sp.Popen(["git branch -r --list "+b+" --contains "+sha1+" --sort=-committerdate | tail -1"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
@@ -75,19 +94,19 @@ def clone(repository,sha1):
         branch = pipe.communicate()
         print branch[0]
 
-    packaging_lsts.append([repository,commit[0],branch[0],date[0],sha1])
+    packaging_lsts.append([repository,commit,branch[0],date[0],author[0],sha1])
 
     for i in range(0,10):
-        pipe = sp.Popen(["git log -n 1 --skip "+str(i)+" --pretty=format:'%s|-|%cd|-|%H' --merges"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
+        pipe = sp.Popen(["TZ=UTC git log -n 1 --skip "+str(i)+" --pretty=format:'%s|-|%cd|-|%an|-|%H' --merges --date=iso-local"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
         res = pipe.communicate()
         print res[0]
         repo_lsts.append([res[0].split('|-|')])
     create_sec_html(repo_lsts,repository)
 
 def create_main_html(packaging_lsts):
-    strTable = """<html><p><b>"""+REPO+"""</b></p><table border="1"><tr><th>Repository</th><th>Commit</th><th>Branch</th><th>Date</th><th>sha1</th></tr>"""
+    strTable = """<html><p><b>"""+REPO+""" - """+main_commit[0]+"""</b></p><table border="1"><tr><th>Repository</th><th>Commit</th><th>Branch</th><th>Date</th><th>Author</th><th>sha1</th></tr>"""
     for lst in packaging_lsts:
-        strRW = "<tr><td>"+str(lst[0])+ "</td><td style='max-width: 600px;'>"+str(lst[1])+"</td><td>"+str(lst[2])+"</td><td>"+str(lst[3])+"</td><td>"+str(lst[4])+"</td></tr>"
+        strRW = "<tr><td>"+str(lst[0])+ "</td><td style='max-width: 500px;'>"+str(lst[1])+"</td><td>"+str(lst[2])+"</td><td>"+str(lst[3])+"</td><td>"+str(lst[4])+"</td><td>"+str(lst[5])+"</td></tr>"
         strTable = strTable+strRW
     strTable = strTable+"</table><br><br><br></html>"
     with open("package_lineage.html", 'a') as outfile:
@@ -95,9 +114,9 @@ def create_main_html(packaging_lsts):
 
 def create_sec_html(repo_lsts,repository):
     os.chdir('..')
-    strTable = """<html><p><b>"""+repository+"""</b></p><table border="1"><tr><th>Commit</th><th>Date</th><th>sha1</th></tr>"""
+    strTable = """<html><p><b>"""+repository+"""</b></p><table border="1"><tr><th>Commit</th><th>Date</th><th>Author</th><th>sha1</th></tr>"""
     for lst in repo_lsts:
-        strRW = "<tr><td style='max-width: 600px;'>"+str(lst[0][0])+ "</td><td>"+str(lst[0][1])+"</td><td>"+str(lst[0][2])+"</td></tr>"
+        strRW = "<tr><td style='max-width: 500px;'>"+str(lst[0][0])+ "</td><td>"+str(lst[0][1])+"</td><td>"+str(lst[0][2])+"</td><td>"+str(lst[0][3])+"</td></tr>"
         strTable = strTable+strRW
     strTable = strTable+"</table><br><br><br></html>"
     with open("repo_lineage.html", 'a') as outfile:
