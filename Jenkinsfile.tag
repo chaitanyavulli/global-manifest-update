@@ -107,7 +107,14 @@ node('docker_build') {
             'access-product-packaging'  : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/access-product-packaging/pull-requests',
             'integrated-packaging'      : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/integrated-packaging/pull-requests'
             ]
-
+        //special case for platdev-multi-rat - we wish to create 2 PRs - where the second one will point to feature/platdev-multi-rat
+        def MULTI_RAT = false
+        if (( DEST_BRANCH == "integ/6_2_dev") && ( PW_REPOSITORY == "2g-stack" || PW_REPOSITORY == "vru-2g-phy" || PW_REPOSITORY == "osmo2g" )){
+            MULTI_RAT = true
+        }
+        if (( DEST_BRANCH == "develop") && ( PW_REPOSITORY == "core-stacks" || PW_REPOSITORY == "vru-4g-phy" || PW_REPOSITORY == "vru-3g-phy" || PW_REPOSITORY == "nodeh" || PW_REPOSITORY == "core-stacks-phy" )){
+            MULTI_RAT = true
+        }
         //special case: access-packaging = release/REL_vBBU_6.1.x , hng = release/REL_HNG_6.1.x , integrated-packaging = release/REL_6.1.x
         //x can be 0,1,2,3,4,5...
         if (( DEST_BRANCH.startsWith("release/REL_vBBU_6.1.") && PW_REPOSITORY == "access-product-packaging" ) || ( DEST_BRANCH.startsWith("release/REL_HNG_6.1.") && PW_REPOSITORY == "core" )){
@@ -240,7 +247,7 @@ node('docker_build') {
                          println "Artifact is present."
                      }
                  }
-            }
+             }
              stage('Update Manifest Files') {
                 dir("${verCode}") {
                     def retryAttempt = 0
@@ -249,8 +256,14 @@ node('docker_build') {
                             sleep 60
                         }
                         retryAttempt = retryAttempt + 1
-                        def remotes = manifest_map[PW_REPOSITORY]
-                        remotes.each{remote ->
+                        def dest_branches = ["${DEST_BRANCH}"]
+                        if (MULTI_RAT){
+                            println "MULTI_RAT is on"
+                            dest_branches = ["${DEST_BRANCH}","feature/platdev-multi-rat"]
+                        }
+                        dest_branches.each{dst_branch ->
+                          def remotes = manifest_map[PW_REPOSITORY]
+                          remotes.each{remote ->
                             mirror= git_remotes[remote]
                             pull_api = pull_remote[remote]
                             sh """
@@ -265,7 +278,7 @@ node('docker_build') {
 
                             dir("${remote}"){
                                 sh(returnStatus: true, script: "pwd")
-                                sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${DEST_BRANCH}")
+                                sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${dst_branch}")
                                 
                                 def CURRENT_COMMIT_HASH = ""
                                 def currentTimestamp = ""
@@ -309,7 +322,7 @@ node('docker_build') {
                                     notifyFailure()
                                     return
                                 }
-                                pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} ${DEST_BRANCH} ${pull_api} ${remote} ${remote} ${buildUser} '${GIT_COMMIT_MSG}'").trim()
+                                pull_req = sh( returnStdout : true, script: "sh ../global-packaging/PullReqfile.sh ${INTEG_BRANCH} ${dst_branch} ${pull_api} ${remote} ${remote} ${buildUser} '${GIT_COMMIT_MSG}'").trim()
                                 println pull_req
             
                                 def props = readJSON text:pull_req.toString(),returnPojo: true
@@ -325,9 +338,9 @@ node('docker_build') {
                                 } else { println props.links.self[0].href
                                    pull_list.add(props.links.self[0].href)
                                 }
-                                
                             }
-                        }
+                         }
+                      }
                     }
                 }
             }
