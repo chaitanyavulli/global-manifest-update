@@ -109,12 +109,14 @@ node('docker_build') {
             ]
         //special case for platdev-multi-rat - we wish to create 2 PRs - where the second one will point to feature/platdev-multi-rat
         def MULTI_RAT = false
-        if (( DEST_BRANCH == "integ/6_2_dev") && ( PW_REPOSITORY == "2g-stack" || PW_REPOSITORY == "vru-2g-phy" || PW_REPOSITORY == "osmo2g" )){
+	/*
+        if (( DEST_BRANCH == "integ/6_2_dev") && ( PW_REPOSITORY == "2g-stack" || PW_REPOSITORY == "osmo2g" )){
             MULTI_RAT = true
         }
         if (( DEST_BRANCH == "develop") && ( PW_REPOSITORY == "core-stacks" || PW_REPOSITORY == "nodeh" || PW_REPOSITORY == "core-stacks-phy" )){
             MULTI_RAT = true
         }
+	*/
         //special case: access-packaging = release/REL_vBBU_6.1.x , hng = release/REL_HNG_6.1.x , integrated-packaging = release/REL_6.1.x
         //x can be 0,1,2,3,4,5...
         if (( DEST_BRANCH.startsWith("release/REL_vBBU_6.1.") && PW_REPOSITORY == "access-product-packaging" ) || ( DEST_BRANCH.startsWith("release/REL_HNG_6.1.") && PW_REPOSITORY == "core" )){
