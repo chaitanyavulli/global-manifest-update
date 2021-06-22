@@ -71,7 +71,8 @@ node('docker_build') {
             'cws-rrh': 'ssh://git@git.parallelwireless.net:7999/cd/cws-rrh.git',
             'osmo2g': 'ssh://git@git.parallelwireless.net:7999/cd/osmo2g.git',
             'access-iso': 'ssh://git@git.parallelwireless.net:7999/pwis/access-iso.git',
-            'pwems-platform': 'ssh://git@git.parallelwireless.net:7999/cd/pwems-platform.git'
+            'pwems-platform': 'ssh://git@git.parallelwireless.net:7999/cd/pwems-platform.git',
+            'pwems-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/pwems-product-packaging.git'
 		 ]
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
@@ -82,7 +83,7 @@ node('docker_build') {
             'nrtric': ['integrated-packaging'],
             'rt-monitoring': ['integrated-packaging'],
             'uniperf': ['integrated-packaging'],
-            'pwconfig': ['integrated-packaging'],
+            'pwconfig': ['pwems-product-packaging'],
             'core-stacks': ['access-product-packaging'],
             '2g-stack': ['access-product-packaging'],
             'pnf-vnf': ['access-product-packaging'],
@@ -95,7 +96,8 @@ node('docker_build') {
             'cws-rrh': ['access-product-packaging'],
             'osmo2g': ['access-product-packaging'],
             'access-iso': ['access-product-packaging'],
-            'pwems-platform': ['integrated-packaging']
+            'pwems-platform': ['pwems-product-packaging'],
+            'pwems-product-packaging': ['integrated-packaging']
 		 ]
 
         def build_jobs = [
@@ -105,7 +107,8 @@ node('docker_build') {
 
         def pull_remote = [
             'access-product-packaging'  : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/access-product-packaging/pull-requests',
-            'integrated-packaging'      : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/integrated-packaging/pull-requests'
+            'integrated-packaging'      : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/integrated-packaging/pull-requests',
+            'pwems-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/pwems-product-packaging/pull-requests'
             ]
         //special case for platdev-multi-rat - we wish to create 2 PRs - where the second one will point to feature/platdev-multi-rat
         def MULTI_RAT = false
