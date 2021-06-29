@@ -81,7 +81,7 @@ node('docker_build') {
             'access-product-packaging': ['integrated-packaging'],
             'core': [packagingJob],
             'nrtric': ['integrated-packaging'],
-            'rt-monitoring': ['integrated-packaging'],
+            'rt-monitoring': ['pwems-product-packaging'],
             'uniperf': ['integrated-packaging'],
             'pwconfig': ['pwems-product-packaging'],
             'core-stacks': ['access-product-packaging'],
