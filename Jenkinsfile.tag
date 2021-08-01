@@ -122,6 +122,19 @@ node('docker_build') {
             MULTI_RAT = true
         }
 	*/
+        //special case: access-product-packaging release/REL_6.2.x , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
+        if (( DEST_BRANCH.startsWith("release/REL_6.2.") && PW_REPOSITORY == "access-product-packaging" )){
+            echo "Changing the destination branch to be the latest release/REL_6.2."
+            for (rel_num in ['6','5','4','3','2','1','0'] ) {
+                retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/release/REL_6.2.$rel_num")
+                if ( retValue == 0 ){
+                    DEST_BRANCH = "release/REL_6.2.$rel_num"
+                    echo "$DEST_BRANCH"
+                    break
+                }
+            }
+        }
+
         //special case: access-packaging = release/REL_vBBU_6.1.x , hng = release/REL_HNG_6.1.x , integrated-packaging = release/REL_6.1.x
         //x can be 0,1,2,3,4,5...
         if (( DEST_BRANCH.startsWith("release/REL_vBBU_6.1.") && PW_REPOSITORY == "access-product-packaging" ) || ( DEST_BRANCH.startsWith("release/REL_HNG_6.1.") && PW_REPOSITORY == "core" )){
