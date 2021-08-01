@@ -124,6 +124,7 @@ node('docker_build') {
 	*/
         //special case: access-product-packaging release/REL_6.2.x , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
         if (( DEST_BRANCH.startsWith("release/REL_6.2.") && PW_REPOSITORY == "access-product-packaging" )){
+            def packaging_repo = manifest_map[PW_REPOSITORY][0]
             echo "Changing the destination branch to be the latest release/REL_6.2."
             for (rel_num in ['6','5','4','3','2','1','0'] ) {
                 retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/release/REL_6.2.$rel_num")
