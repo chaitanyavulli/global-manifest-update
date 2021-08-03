@@ -10,6 +10,8 @@ import subprocess as sp
 
 HASH = os.getenv('push_changes_0_new_target_hash')
 SHORT_HASH = HASH[:8]
+LONG_TABLE = 20
+SHORT_TABLE = 10
 REPO = os.getenv('repository_slug')
 if len(HASH) != 40:
     print('ERROR: expecting 40 chars... Failing...')
@@ -23,6 +25,7 @@ else:
     branch_order = ['origin/release*','origin/develop*','origin/feature*','origin/integ*','origin/private*','origin/bugfix*']
 
 packaging_lsts = []
+repos_together_lsts = [] # to sort according to date
 
 pipe = sp.Popen(["cd ../"+REPO+" ; git log -1 --pretty=format:%s"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
 main_commit = pipe.communicate()
@@ -96,11 +99,14 @@ def clone(repository,sha1):
 
     packaging_lsts.append([repository,commit,branch[0],date[0],author[0],sha1])
 
-    for i in range(0,10):
+    for i in range(0,LONG_TABLE):
         pipe = sp.Popen(["TZ=UTC git log -n 1 --skip "+str(i)+" --pretty=format:'%s|-|%cd|-|%an|-|%H' --merges --date=iso-local"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
         res = pipe.communicate()
         print res[0]
-        repo_lsts.append([res[0].split('|-|')])
+        if res[0] != '':
+            repo_lsts.append([res[0].split('|-|')])
+            repos_together_lsts.append([repository] + res[0].split('|-|'))
+    del repo_lsts[SHORT_TABLE:]
     create_sec_html(repo_lsts,repository)
 
 def create_main_html(packaging_lsts):
@@ -122,10 +128,21 @@ def create_sec_html(repo_lsts,repository):
     with open("repo_lineage.html", 'a') as outfile:
         outfile.write(strTable)
 
-def merge_html(file1,file2):
-    print "Merging 2 html files..."
+def create_date_html(repos_together_lsts):
+    repos_together_lsts = sorted(repos_together_lsts, key = lambda x: x[2] , reverse=True)
+    del repos_together_lsts[LONG_TABLE:]
+    strTable = """<html><p><b>Sorted by Date</b></p><table border="1"><tr><th>Repository</th><th>Commit</th><th>Date</th><th>Author</th><th>sha1</th></tr>"""
+    for lst in repos_together_lsts:
+        strRW = "<tr><td style='max-width: 500px;'>"+str(lst[0])+ "</td><td>"+str(lst[1])+"</td><td>"+str(lst[2])+"</td><td>"+str(lst[3])+"</td><td>"+str(lst[4])+"</td></tr>"
+        strTable = strTable+strRW
+    strTable = strTable+"</table><br><br><br></html>"
+    with open("date_lineage.html", 'a') as outfile:
+        outfile.write(strTable)
+
+def merge_html(file1,file2,file3):
+    print "Merging 3 html files..."
     with open("release_notes_"+SHORT_HASH+".html" , 'w') as outfile:
-        for fname in [file1,file2]:
+        for fname in [file1,file2,file3]:
             with open(fname) as infile:
                 outfile.write(infile.read())
 
@@ -153,4 +170,5 @@ if __name__ == '__main__':
     #clone('access-product-packaging',HASH)
     get_string_with_properties()
     create_main_html(packaging_lsts)
-    merge_html("package_lineage.html","repo_lineage.html")
+    create_date_html(repos_together_lsts)
+    merge_html("package_lineage.html","date_lineage.html","repo_lineage.html")
