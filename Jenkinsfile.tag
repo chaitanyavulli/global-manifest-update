@@ -212,7 +212,7 @@ node('docker_build') {
                     echo "${env.GIT_COMMIT_MSG}"
                     env.GIT_COMMIT_MSG="${GIT_COMMIT_MSG}".replace("\"", "") //Remove any double quotes for the JSON pull request creation
                     env.GIT_COMMIT_MSG="${GIT_COMMIT_MSG}".replace("\'", "") //Remove any single quotes for the JSON pull request creation
-                    env.GIT_COMMIT_MSG="${GIT_COMMIT_MSG}".take(128) //Please enter a non-empty value less than 255 characters
+                    env.GIT_COMMIT_MSG="${GIT_COMMIT_MSG}".take(200) //Please enter a non-empty value less than 255 characters
                     env.AUTHOR_EMAIL = sh(returnStdout:true, script: "git log --format='%ae' -n 1 ${NEW_COMMIT_HASH}").trim()
                     echo "${env.AUTHOR_EMAIL}"
                 }

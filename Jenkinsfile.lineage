@@ -103,7 +103,8 @@ node('docker_build') {
                         "files": [
                             {
                                 "pattern": "**/release_notes_*.html",
-                                "target": "${target_artfact_dir}/${commit_hash_date}/"
+                                "target": "${target_artfact_dir}/${commit_hash_date}/",
+                                "props": "commitID=${push_changes_0_new_target_hash};type=logs"
                             }
                         ]
                     }"""
