@@ -17,6 +17,7 @@ if len(HASH) != 40:
     print('ERROR: expecting 40 chars... Failing...')
     sys.exit(1)
 git_url="ssh://git@git.parallelwireless.net:7999"
+bitbucket_main="https://git.parallelwireless.net/projects/"
 
 BRANCH = os.getenv('push_changes_0_new_name')
 if BRANCH == 'develop':
@@ -96,23 +97,28 @@ def clone(repository,sha1):
         pipe = sp.Popen(["git branch -r --contains "+sha1+" --sort=-committerdate"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
         branch = pipe.communicate()
         print branch[0]
+    
+    bitbucket_link=bitbucket_main+project+"/repos/"+repository+"/commits/"+sha1
+    artifactory_link="https://pwartifactory.parallelwireless.net/ui/artifactSearchResults?artifactsSearchType=Property&propertiesSetsObject%5BcommitID%5D="+sha1+"&repositories%5B0%5D=pw-products&type=artifacts"
 
-    packaging_lsts.append([repository,commit,branch[0],date[0],author[0],sha1])
+    packaging_lsts.append([repository,commit,branch[0],date[0],author[0],sha1,bitbucket_link,artifactory_link])
 
     for i in range(0,LONG_TABLE):
         pipe = sp.Popen(["TZ=UTC git log -n 1 --skip "+str(i)+" --pretty=format:'%s|-|%cd|-|%an|-|%H' --merges --date=iso-local"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
         res = pipe.communicate()
         print res[0]
         if res[0] != '':
-            repo_lsts.append([res[0].split('|-|')])
-            repos_together_lsts.append([repository] + res[0].split('|-|'))
+            bitbucket_link=bitbucket_main+project+"/repos/"+repository+"/commits/"+res[0].split('|-|')[3]
+            artifactory_link="https://pwartifactory.parallelwireless.net/ui/artifactSearchResults?artifactsSearchType=Property&propertiesSetsObject%5BcommitID%5D="+res[0].split('|-|')[3]+"&repositories%5B0%5D=pw-products&type=artifacts"
+            repo_lsts.append([res[0].split('|-|') , bitbucket_link , artifactory_link])
+            repos_together_lsts.append([repository] + res[0].split('|-|') + [bitbucket_link] + [artifactory_link])
     del repo_lsts[SHORT_TABLE:]
     create_sec_html(repo_lsts,repository)
 
 def create_main_html(packaging_lsts):
-    strTable = """<html><p><b>"""+REPO+""" - """+main_commit[0]+"""</b></p><table border="1"><tr><th>Repository</th><th>Commit</th><th>Branch</th><th>Date</th><th>Author</th><th>sha1</th></tr>"""
+    strTable = """<html><p><b>"""+REPO+""" - """+HASH+"""<br> Last change is: """+main_commit[0]+"""</b></p><table border="1"><tr><th>Repository</th><th>Commit</th><th>Branch</th><th>Date</th><th>Author</th><th>sha1</th><th>Bitbucket</th><th>Artifactory</th></tr>"""
     for lst in packaging_lsts:
-        strRW = "<tr><td>"+str(lst[0])+ "</td><td style='max-width: 500px;'>"+str(lst[1])+"</td><td>"+str(lst[2])+"</td><td>"+str(lst[3])+"</td><td>"+str(lst[4])+"</td><td>"+str(lst[5])+"</td></tr>"
+        strRW = "<tr><td>"+str(lst[0])+ "</td><td style='max-width: 500px;'>"+str(lst[1])+"</td><td>"+str(lst[2])+"</td><td>"+str(lst[3])+"</td><td>"+str(lst[4])+"</td><td>"+str(lst[5])+"</td><td><a href="+str(lst[6])+">Link</a></td><td><a href="+str(lst[7])+">Link</a></td></tr>"
         strTable = strTable+strRW
     strTable = strTable+"</table><br><br><br></html>"
     with open("package_lineage.html", 'a') as outfile:
@@ -120,9 +126,9 @@ def create_main_html(packaging_lsts):
 
 def create_sec_html(repo_lsts,repository):
     os.chdir('..')
-    strTable = """<html><p><b>"""+repository+"""</b></p><table border="1"><tr><th>Commit</th><th>Date</th><th>Author</th><th>sha1</th></tr>"""
+    strTable = """<html><p><b>"""+repository+"""</b></p><table border="1"><tr><th>Commit</th><th>Date</th><th>Author</th><th>sha1</th><th>Bitbucket</th><th>Artifactory</th></tr>"""
     for lst in repo_lsts:
-        strRW = "<tr><td style='max-width: 500px;'>"+str(lst[0][0])+ "</td><td>"+str(lst[0][1])+"</td><td>"+str(lst[0][2])+"</td><td>"+str(lst[0][3])+"</td></tr>"
+        strRW = "<tr><td style='max-width: 500px;'>"+str(lst[0][0])+ "</td><td>"+str(lst[0][1])+"</td><td>"+str(lst[0][2])+"</td><td>"+str(lst[0][3])+"</td><td><a href="+str(lst[1])+">Link</a></td><td><a href="+str(lst[2])+">Link</a></td></tr>"
         strTable = strTable+strRW
     strTable = strTable+"</table><br><br><br></html>"
     with open("repo_lineage.html", 'a') as outfile:
@@ -131,9 +137,9 @@ def create_sec_html(repo_lsts,repository):
 def create_date_html(repos_together_lsts):
     repos_together_lsts = sorted(repos_together_lsts, key = lambda x: x[2] , reverse=True)
     del repos_together_lsts[LONG_TABLE:]
-    strTable = """<html><p><b>Sorted by Date</b></p><table border="1"><tr><th>Repository</th><th>Commit</th><th>Date</th><th>Author</th><th>sha1</th></tr>"""
+    strTable = """<html><p><b>Last """+str(LONG_TABLE)+""" commits of the upstream components, sorted in a chorological order.</b></p><table border="1"><tr><th>Repository</th><th>Commit</th><th>Date</th><th>Author</th><th>sha1</th><th>Bitbucket</th><th>Artifactory</th></tr>"""
     for lst in repos_together_lsts:
-        strRW = "<tr><td style='max-width: 500px;'>"+str(lst[0])+ "</td><td>"+str(lst[1])+"</td><td>"+str(lst[2])+"</td><td>"+str(lst[3])+"</td><td>"+str(lst[4])+"</td></tr>"
+        strRW = "<tr><td style='max-width: 500px;'>"+str(lst[0])+ "</td><td>"+str(lst[1])+"</td><td>"+str(lst[2])+"</td><td>"+str(lst[3])+"</td><td>"+str(lst[4])+"</td><td><a href="+str(lst[5])+">Link</a></td><td><a href="+str(lst[6])+">Link</a></td></tr>"
         strTable = strTable+strRW
     strTable = strTable+"</table><br><br><br></html>"
     with open("date_lineage.html", 'a') as outfile:
