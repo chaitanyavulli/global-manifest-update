@@ -124,8 +124,8 @@ node('docker_build') {
             MULTI_RAT = true
         }
 	*/
-        //special case: access-product-packaging release/REL_6.2.x , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
-        if (( DEST_BRANCH.startsWith("release/REL_6.2.") && PW_REPOSITORY == "access-product-packaging" )){
+        //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
+        if (( DEST_BRANCH.startsWith("release/REL_6.2.") && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" ))){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
             echo "Changing the destination branch to be the latest release/REL_6.2."
             for (rel_num in ['6','5','4','3','2','1','0'] ) {
