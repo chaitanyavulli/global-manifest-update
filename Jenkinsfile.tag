@@ -73,7 +73,8 @@ node('docker_build') {
             'osmo2g': 'ssh://git@git.parallelwireless.net:7999/cd/osmo2g.git',
             'access-iso': 'ssh://git@git.parallelwireless.net:7999/pwis/access-iso.git',
             'pwems-platform': 'ssh://git@git.parallelwireless.net:7999/cd/pwems-platform.git',
-            'pwems-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/pwems-product-packaging.git'
+            'pwems-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/pwems-product-packaging.git',
+            'network': 'ssh://git@git.parallelwireless.net:7999/cd/network.git'
 		 ]
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
@@ -99,6 +100,7 @@ node('docker_build') {
             'osmo2g': ['access-product-packaging'],
             'access-iso': ['access-product-packaging'],
             'pwems-platform': ['pwems-product-packaging'],
+            'network': ['integrated-packaging'],
             'pwems-product-packaging': ['integrated-packaging']
 		 ]
 
