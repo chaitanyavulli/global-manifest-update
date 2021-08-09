@@ -100,7 +100,7 @@ node('docker_build') {
             'osmo2g': ['access-product-packaging'],
             'access-iso': ['access-product-packaging'],
             'pwems-platform': ['pwems-product-packaging'],
-            'network': ['pwems-product-packaging'],
+            'network': ['integrated-packaging'],
             'pwems-product-packaging': ['integrated-packaging']
 		 ]
 
