@@ -70,7 +70,7 @@ node('docker_build') {
                     env.commit_hash_date = sh(
                         label: "Git commit hash and date",
                         returnStdout: true,
-                        script:"cd ${repository_slug} ; TZ=UTC git log --format=format:%cd-%h --date=format-local:%Y-%m-%d-%H-%M -n 1"
+                        script:"cd ${repository_slug} ; TZ=UTC git log --format=format:%cd-%h --date=format-local:%Y-%m-%d-%H-%M -n 1 --abbrev=8"
                         ).trim()
                 }
             }
@@ -80,20 +80,6 @@ node('docker_build') {
                 python -u lineage.py ../${repository_slug}/manifest.json
                 """
                }
-            }
-            stage('Check Folder'){
-                dir("${verCode}/${repository_slug}") {
-                    retValue = sh(returnStdout: true, script: "curl -s https://pwartifactory.parallelwireless.net/artifactory/api/search/prop?commitID=${NEW_COMMIT_HASH}")
-                    ret_data = readJSON text:retValue.toString(),returnPojo: true
-                    
-                    println ret_data["results"]
-                    uri = ret_data["results"][0]
-                    commit_hash_date_temp = sh(returnStdout: true, script: "echo $uri | awk -F '/' '{ print \$(NF-1) }'").trim()
-                    println commit_hash_date_temp
-                    if ( commit_hash_date_temp.contains(commit_hash_date) ) {
-                        env.commit_hash_date = sh(returnStdout: true, script: "echo $commit_hash_date_temp").trim()
-                    }
-                }
             }
             stage('Publish') {
                     def server = Artifactory.server("production artifactory")
