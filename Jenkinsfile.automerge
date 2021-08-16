@@ -1,0 +1,40 @@
+#!/usr/bin/env groovy
+
+//
+//Copyright (c) 2014-2021 Parallel Wireless, Inc. All rights reserved.
+//
+
+import groovy.json.JsonSlurper
+
+def secrets = [
+    [path: 'development/engsvcs/global-manifest-update', engineVersion: 2, secretValues: [[envVar: 'prPass', vaultKey: 'prPassword'],[envVar: 'prUser', vaultKey: 'prUser']]]
+]
+
+def configuration = [
+    vaultUrl: 'https://vault.parallelwireless.net',vaultCredentialId: 'pwvault', engineVersion: 2]
+
+def project = "cd"
+
+withVault([configuration: configuration, vaultSecrets: secrets]) {
+    stage('Auto Merge'){
+        println "Starting the auto merge stage"
+        pull_req = sh(returnStdout : true,
+            script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json https://git.parallelwireless.net/rest/api/1.0/projects/${project}/repos/${repository_slug}/commits/${push_changes_0_new_target_hash}/pull-requests?state=OPEN").trim()
+        println pull_req
+        def props = readJSON text:pull_req.toString(),returnPojo: true
+        if ( props.values[0] != null ){
+            def ID = props.values[0].id
+            def STATE = props.values[0].state
+            def VERSION = props.values[0].version
+            def DEST_BRANCH = props.values[0].toRef.displayId
+            println "ID is ${ID} , STATE is ${STATE} , VERSION is ${VERSION} , DEST_BRANCH is ${DEST_BRANCH}"
+            if ( STATE == "OPEN" && ID != null && VERSION != null && ( DEST_BRANCH == "develop" || DEST_BRANCH.startsWith("integ") ) ) {
+                pull_req = sh(returnStdout : true,
+                    script: "curl -u ${prUser}:${prPass} -X POST -H Content-Type:application/json -H X-Atlassian-Token:no-check https://git.parallelwireless.net/rest/api/1.0/projects/${project}/repos/${repository_slug}/pull-requests/${ID}/merge?version=${VERSION}").trim()
+                println pull_req
+            } else {
+                echo "Not running the auto merge - no open PR or destination branch is not allowed"
+            }
+        }
+    }//stage
+}//vault
