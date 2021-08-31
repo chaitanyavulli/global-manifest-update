@@ -1,0 +1,25 @@
+#!/usr/bin/env groovy
+
+//
+//Copyright (c) 2014-2021 Parallel Wireless, Inc. All rights reserved.
+//
+
+stage('Jira'){
+    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        env.JIRA_TICKET = sh(
+            label: "Get the Jira ticket number",
+            returnStdout: true,
+            script: "git log --format=%B -n 1 ${push_changes_0_new_target_hash} | grep -m1 -o -e '[A-Z]\\+-[0-9]\\+'").trim()
+        println JIRA_TICKET
+        if ( JIRA_TICKET != null && ! "${push_changes_0_new_name}".contains("private") ) {
+            def JIRA_BODY= """
+            Integrated in Jenkins Job ${JOB_NAME}
+            ${BUILD_URL}
+            Bitbucket: https://git.parallelwireless.net/projects/${repository_project_key}/repos/${repository_slug}/commits/${push_changes_0_new_target_hash}
+            Artifactory: https://pwartifactory.parallelwireless.net/artifactory/pw-products/${repository_slug}/${push_changes_0_new_name}/${commit_hash_date}
+            """
+            println JIRA_BODY
+            jiraComment body: "${JIRA_BODY}", issueKey: "${JIRA_TICKET}"
+        }
+    }//catch
+}//stage
