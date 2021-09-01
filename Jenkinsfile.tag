@@ -210,7 +210,7 @@ node('docker_build') {
              */
              stage('Upstream commit message') {
                 dir("${verCode}/${PW_REPOSITORY}") {
-                    env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "echo ${PW_REPOSITORY} commit message is: `git log --pretty=format:%s -n 1 ${NEW_COMMIT_HASH}`").trim()
+                    env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "echo ${PW_REPOSITORY} commit message is: `git log --pretty=format:%B -n 1 ${NEW_COMMIT_HASH} | tail -1`").trim()
                     echo "${env.GIT_COMMIT_MSG}"
                     env.GIT_COMMIT_MSG="${GIT_COMMIT_MSG}".replace("\"", "") //Remove any double quotes for the JSON pull request creation
                     env.GIT_COMMIT_MSG="${GIT_COMMIT_MSG}".replace("\'", "") //Remove any single quotes for the JSON pull request creation
