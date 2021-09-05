@@ -9,7 +9,7 @@ stage('Jira'){
         env.JIRA_TICKET = sh(
             label: "Get the Jira ticket number",
             returnStdout: true,
-            script: "git log --format=%B -n 1 ${push_changes_0_new_target_hash} | grep -m1 -o -e '[A-Z]\\+-[0-9]\\+'").trim()
+            script: "git log --format=%B -n 1 ${push_changes_0_new_target_hash} | grep -m1 -o -e '[A-Z]\\+-[0-9]\\+' | head -1").trim()
         println JIRA_TICKET
         if ( JIRA_TICKET != null && ! "${push_changes_0_new_name}".contains("private") ) {
             def JIRA_BODY= """
