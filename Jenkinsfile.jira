@@ -13,7 +13,7 @@ stage('Jira'){
         println JIRA_TICKET
         if ( JIRA_TICKET != null && ! "${push_changes_0_new_name}".contains("private") ) {
             def JIRA_BODY= """
-            Integrated in Jenkins Job ${JOB_NAME}
+            Built on branch ${push_changes_0_new_name} in the ${repository_slug} repository
             ${BUILD_URL}
             Bitbucket: https://git.parallelwireless.net/projects/${repository_project_key}/repos/${repository_slug}/commits/${push_changes_0_new_target_hash}
             Artifactory: https://pwartifactory.parallelwireless.net/artifactory/pw-products/${repository_slug}/${push_changes_0_new_name}/${commit_hash_date}
