@@ -26,14 +26,18 @@ withVault([configuration: configuration, vaultSecrets: secrets]) {
             def ID = props.values[0].id
             def STATE = props.values[0].state
             def VERSION = props.values[0].version
+            def AUTHOR = props.values[0].author.user.name
             def DEST_BRANCH = props.values[0].toRef.displayId
-            println "ID is ${ID} , STATE is ${STATE} , VERSION is ${VERSION} , DEST_BRANCH is ${DEST_BRANCH}"
-            if ( STATE == "OPEN" && ID != null && VERSION != null && ! "${DEST_BRANCH}".contains("release") ) {
+            println "ID is ${ID} , STATE is ${STATE} , VERSION is ${VERSION} , AUTHOR is ${AUTHOR} , DEST_BRANCH is ${DEST_BRANCH}"
+            if ( STATE == "OPEN" && ID != null && VERSION != null && AUTHOR == "ci-eng" && ! "${DEST_BRANCH}".contains("release") ) {
                 pull_req = sh(returnStdout : true,
                     script: "curl -u ${prUser}:${prPass} -X POST -H Content-Type:application/json -H X-Atlassian-Token:no-check https://git.parallelwireless.net/rest/api/1.0/projects/${project}/repos/${repository_slug}/pull-requests/${ID}/merge?version=${VERSION}").trim()
                 println pull_req
             } else {
-                echo "Not running the auto merge - no open PR or destination branch is not allowed"
+                echo "Not running the auto merge - one or more of the following conditions was not met:"
+                echo "Open or active PR"
+                echo "Author is not ci-eng"
+                echo "Destination branch is not allowed"
             }
         }
     }//stage
