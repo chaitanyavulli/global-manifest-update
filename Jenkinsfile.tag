@@ -74,8 +74,10 @@ node('docker_build') {
             'access-iso': 'ssh://git@git.parallelwireless.net:7999/pwis/access-iso.git',
             'pwems-platform': 'ssh://git@git.parallelwireless.net:7999/cd/pwems-platform.git',
             'pwems-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/pwems-product-packaging.git',
-            'network': 'ssh://git@git.parallelwireless.net:7999/cd/network.git'
-		 ]
+            'network': 'ssh://git@git.parallelwireless.net:7999/cd/network.git',
+            'vru-5g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-5g-phy.git',
+            'nr-stack': 'ssh://git@git.parallelwireless.net:7999/cd/nr-stack.git'
+        ]
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
 
@@ -101,8 +103,10 @@ node('docker_build') {
             'access-iso': ['access-product-packaging'],
             'pwems-platform': ['pwems-product-packaging'],
             'network': ['integrated-packaging'],
-            'pwems-product-packaging': ['integrated-packaging']
-		 ]
+            'pwems-product-packaging': ['integrated-packaging'],
+            'vru-5g-phy': ['access-product-packaging'],
+            'nr-stack': ['access-product-packaging']
+        ]
 
         def build_jobs = [
             'core': 'hng-pipeline',
@@ -165,6 +169,16 @@ node('docker_build') {
             echo "Destination branch is ${DEST_BRANCH} - is not part of the governed branches - stopping."
             currentBuild.result = 'SUCCESS'
             return
+        }
+
+        //special case for 5G
+        if ( PW_REPOSITORY == "nr-stack" || PW_REPOSITORY == "vru-5g-phy" ){
+            echo "5G support"
+            if ( DEST_BRANCH != "feature/ME-909-5G" ){
+                echo "only works with feature/ME-909-5G at the moment..."
+                currentBuild.result = 'SUCCESS'
+                return
+            }
         }
 
         notifyBitbucket(commitSha1:"$NEW_COMMIT_HASH")
