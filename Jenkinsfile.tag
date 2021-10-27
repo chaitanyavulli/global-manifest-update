@@ -173,9 +173,13 @@ node('docker_build') {
 
         //special case for 5G
         if ( PW_REPOSITORY == "nr-stack" || PW_REPOSITORY == "vru-5g-phy" ){
-            echo "5G support"
-            if ( DEST_BRANCH != "feature/ME-909-5G" ){
-                echo "only works with feature/ME-909-5G at the moment..."
+            echo "5G support: stack and phy to be taken from develop and moved to the FB"
+            echo "core should be taken from the FB"
+            if ( DEST_BRANCH == "develop" ){
+                echo "Moving change to be built on the feature/ME-909-5G branch at the moment..."
+                DEST_BRANCH = "feature/ME-909-5G"
+            } else {
+                echo "only works with develop at the moment..."
                 currentBuild.result = 'SUCCESS'
                 return
             }
