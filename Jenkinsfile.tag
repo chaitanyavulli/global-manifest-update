@@ -31,7 +31,11 @@ node('docker_build') {
     def PW_REPOSITORY = "${repository_slug}"
     def INTEG_BRANCH = "private/${PW_REPOSITORY}/${PW_BRANCH}"
     def DEST_BRANCH = "${dest_branch}"
-
+    if ( PW_REPOSITORY = "near_rtric"){
+      def PROJECT = "near"
+    } else {
+      def PROJECT = "cd"
+    }
     def buildUser = getBuildUser()
     def packagingJob = getUpstreamJob()
     def secrets = [
@@ -76,7 +80,8 @@ node('docker_build') {
             'pwems-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/pwems-product-packaging.git',
             'network': 'ssh://git@git.parallelwireless.net:7999/cd/network.git',
             'vru-5g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-5g-phy.git',
-            'nr-stack': 'ssh://git@git.parallelwireless.net:7999/cd/nr-stack.git'
+            'nr-stack': 'ssh://git@git.parallelwireless.net:7999/cd/nr-stack.git',
+            'near_rtric': 'ssh://git@git.parallelwireless.net:7999/near/near_rtric.git'
         ]
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
@@ -105,7 +110,8 @@ node('docker_build') {
             'network': ['integrated-packaging'],
             'pwems-product-packaging': ['integrated-packaging'],
             'vru-5g-phy': ['access-product-packaging'],
-            'nr-stack': ['access-product-packaging']
+            'nr-stack': ['access-product-packaging'],
+            'near_rtric': ['integrated-packaging']
         ]
 
         def build_jobs = [
@@ -129,11 +135,11 @@ node('docker_build') {
         }
 	*/
         //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
-        if (( DEST_BRANCH.startsWith("release/REL_6.2.") && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" ))){
+        if ( DEST_BRANCH.startsWith("release/REL_6.2.") && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" || PW_REPOSITORY == "near_rtric")){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
             echo "Changing the destination branch to be the latest release/REL_6.2."
             for (rel_num in ['6','5','4','3','2','1','0'] ) {
-                retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/release/REL_6.2.$rel_num")
+                retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/${PROJECT}/${packaging_repo} refs/heads/release/REL_6.2.$rel_num")
                 if ( retValue == 0 ){
                     DEST_BRANCH = "release/REL_6.2.$rel_num"
                     echo "$DEST_BRANCH"
@@ -157,7 +163,8 @@ node('docker_build') {
 
         if ( DEST_BRANCH == "develop" || DEST_BRANCH.startsWith("integ") || DEST_BRANCH.startsWith("feature") || DEST_BRANCH.startsWith("release") ){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
-            retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/${DEST_BRANCH}")
+            if 
+            retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/${PROJECT}/${packaging_repo} refs/heads/${DEST_BRANCH}")
             if ( retValue == 0 ){
                 echo "Destination branch found in the ${packaging_repo} repo - Continue."
             } else {
@@ -412,7 +419,7 @@ def notifyFailure() {
          subject: "[${currentBuild.result}] - ${env.JOB_NAME} - Build #${BUILD_NUMBER}",
          body: "<b>Build URL:</b> ${env.BUILD_URL}<br>",
          mimeType: 'text/html',
-         to: "${env.AUTHOR_EMAIL} , vbuslovich@parallelwireless.com , akliner@parallelwireless.com"
+         to: "${env.AUTHOR_EMAIL} , hvulli@parallelwireless.net , vbuslovich@parallelwireless.com , akliner@parallelwireless.com"
     )
 }
 
