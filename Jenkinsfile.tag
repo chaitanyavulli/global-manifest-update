@@ -19,7 +19,7 @@ node('docker_build') {
         ),
         parameters([
             string(defaultValue: '', description: 'Branch Name:', name: 'push_changes_0_new_name', trim: true),
-            string(defaultValue: '', description: 'Repository Name: (Possible values: access-product-packaging core nrtric pwgui rt-monitoring uniperf pwconfig core-stacks 2g-stack pnf-vnf core-stacks-phy vru-4g-phy bbpms_bsp vru-2g-phy vru-3g-phy nodeh cws-rrh osmo2g access-iso)', name: 'repository_slug', trim: true),
+            string(defaultValue: '', description: 'Repository Name: (Possible values: access-product-packaging core nrtric pwgui rt-monitoring uniperf pwconfig core-stacks 2g-stack pnf-vnf core-stacks-phy vru-4g-phy bbpms_bsp vru-2g-phy vru-3g-phy nodeh cws-rrh osmo2g access-iso near_rtric)', name: 'repository_slug', trim: true),
             string(defaultValue: '', description: 'New Hash:', name: 'push_changes_0_new_target_hash', trim: true),
             string(defaultValue: '', description: 'PR Destination:', name: 'dest_branch', trim: true),
             string(defaultValue: 'develop', description: 'For internal Use:', name: 'global_packaging_branch', trim: true),
@@ -31,7 +31,6 @@ node('docker_build') {
     def PW_REPOSITORY = "${repository_slug}"
     def INTEG_BRANCH = "private/${PW_REPOSITORY}/${PW_BRANCH}"
     def DEST_BRANCH = "${dest_branch}"
-
     def buildUser = getBuildUser()
     def packagingJob = getUpstreamJob()
     def secrets = [
@@ -76,7 +75,8 @@ node('docker_build') {
             'pwems-product-packaging': 'ssh://git@git.parallelwireless.net:7999/cd/pwems-product-packaging.git',
             'network': 'ssh://git@git.parallelwireless.net:7999/cd/network.git',
             'vru-5g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-5g-phy.git',
-            'nr-stack': 'ssh://git@git.parallelwireless.net:7999/cd/nr-stack.git'
+            'nr-stack': 'ssh://git@git.parallelwireless.net:7999/cd/nr-stack.git',
+            'near_rtric': 'ssh://git@git.parallelwireless.net:7999/near/near_rtric.git'
         ]
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
@@ -105,7 +105,8 @@ node('docker_build') {
             'network': ['integrated-packaging'],
             'pwems-product-packaging': ['integrated-packaging'],
             'vru-5g-phy': ['access-product-packaging'],
-            'nr-stack': ['access-product-packaging']
+            'nr-stack': ['access-product-packaging'],
+            'near_rtric': ['integrated-packaging']
         ]
 
         def build_jobs = [
@@ -155,7 +156,7 @@ node('docker_build') {
             println DEST_BRANCH
         }
 
-        if ( DEST_BRANCH == "develop" || DEST_BRANCH.startsWith("integ") || DEST_BRANCH.startsWith("feature") || DEST_BRANCH.startsWith("release") ){
+        if ( DEST_BRANCH == "develop" || DEST_BRANCH.startsWith("integ") || DEST_BRANCH.startsWith("feature") || DEST_BRANCH.startsWith("release")){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
             retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/${DEST_BRANCH}")
             if ( retValue == 0 ){
