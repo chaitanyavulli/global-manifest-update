@@ -130,7 +130,7 @@ node('docker_build') {
         }
 	*/
         //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
-        if ( DEST_BRANCH.startsWith("release/REL_6.2.") && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" || PW_REPOSITORY == "near_rtric")){
+        if (( DEST_BRANCH.startsWith("release/REL_6.2.") && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" ))){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
             echo "Changing the destination branch to be the latest release/REL_6.2."
             for (rel_num in ['6','5','4','3','2','1','0'] ) {
@@ -156,7 +156,7 @@ node('docker_build') {
             println DEST_BRANCH
         }
 
-        if (( DEST_BRANCH == "develop" || DEST_BRANCH.startsWith("integ") || DEST_BRANCH.startsWith("feature") || DEST_BRANCH.startsWith("release"))){
+        if ( DEST_BRANCH == "develop" || DEST_BRANCH.startsWith("integ") || DEST_BRANCH.startsWith("feature") || DEST_BRANCH.startsWith("release")){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
             retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/${DEST_BRANCH}")
             if ( retValue == 0 ){
