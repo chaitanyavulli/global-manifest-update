@@ -43,6 +43,8 @@ def clone(repository,sha1):
         project="da"
     elif repository == "uniperf":
         project="tool"
+    elif repository == "near_rtric":
+        project="NEAR"
     else:
         project="cd"
 
