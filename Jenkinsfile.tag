@@ -129,14 +129,15 @@ node('docker_build') {
             MULTI_RAT = true
         }
 	*/
-        //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
-        if (( DEST_BRANCH.startsWith("release/REL_6.2.") && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" ))){
+        //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x onwards , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
+        if (( DEST_BRANCH.startsWith("release/REL_6.") && ( DEST_BRANCH.endsWith("x")) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" ))){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
-            echo "Changing the destination branch to be the latest release/REL_6.2."
+            def branch_cut = DEST_BRANCH.substring(0, DEST_BRANCH.length() - 1) // remove last char
+            echo "Changing the destination branch to be the latest ${branch_cut}"
             for (rel_num in ['6','5','4','3','2','1','0'] ) {
-                retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/release/REL_6.2.$rel_num")
+                retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/$branch_cut$rel_num")
                 if ( retValue == 0 ){
-                    DEST_BRANCH = "release/REL_6.2.$rel_num"
+                    DEST_BRANCH = "$branch_cut$rel_num"
                     echo "$DEST_BRANCH"
                     break
                 }
