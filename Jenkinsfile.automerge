@@ -13,13 +13,28 @@ def secrets = [
 def configuration = [
     vaultUrl: 'https://vault.parallelwireless.net',vaultCredentialId: 'pwvault', engineVersion: 2]
 
-def project = "cd"
+def PROJECT = "cd"
+def REPOSITORY = "${repository_slug}"
+def HASH = "${push_changes_0_new_target_hash}"
+
+if ( env.repository_project_key != null ){
+    echo 'Note: updating repository_project_key to ${repository_project_key}'
+    PROJECT = "${repository_project_key}"
+}
+if ( env.repository_slug_pkg != null ){
+    echo "Note: changing repository to upstream ${repository_slug_pkg}"
+    REPOSITORY = "${repository_slug_pkg}"
+}
+if ( env.push_changes_0_new_target_hash_pkg != null ){
+    echo "Note: changing hash to upstream ${push_changes_0_new_target_hash_pkg}"
+    HASH = "${push_changes_0_new_target_hash_pkg}"
+}
 
 withVault([configuration: configuration, vaultSecrets: secrets]) {
     stage('Auto Merge'){
         println "Starting the auto merge stage"
         pull_req = sh(returnStdout : true,
-            script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json https://git.parallelwireless.net/rest/api/1.0/projects/${project}/repos/${repository_slug}/commits/${push_changes_0_new_target_hash}/pull-requests?state=OPEN").trim()
+            script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json https://git.parallelwireless.net/rest/api/1.0/projects/${PROJECT}/repos/${REPOSITORY}/commits/${HASH}/pull-requests?state=OPEN").trim()
         println pull_req
         def props = readJSON text:pull_req.toString(),returnPojo: true
         if ( props.values[0] != null ){
@@ -31,7 +46,7 @@ withVault([configuration: configuration, vaultSecrets: secrets]) {
             println "ID is ${ID} , STATE is ${STATE} , VERSION is ${VERSION} , AUTHOR is ${AUTHOR} , DEST_BRANCH is ${DEST_BRANCH}"
             if ( ( STATE == "OPEN" && ID != null && VERSION != null && AUTHOR == "ci-eng" ) && ( ! "${DEST_BRANCH}".contains("release") || "${repository_slug}" == "vru-4g-phy" ) ) {
                 pull_req = sh(returnStdout : true,
-                    script: "curl -u ${prUser}:${prPass} -X POST -H Content-Type:application/json -H X-Atlassian-Token:no-check https://git.parallelwireless.net/rest/api/1.0/projects/${project}/repos/${repository_slug}/pull-requests/${ID}/merge?version=${VERSION}").trim()
+                    script: "curl -u ${prUser}:${prPass} -X POST -H Content-Type:application/json -H X-Atlassian-Token:no-check https://git.parallelwireless.net/rest/api/1.0/projects/${PROJECT}/repos/${REPOSITORY}/pull-requests/${ID}/merge?version=${VERSION}").trim()
                 println pull_req
             } else {
                 echo "Not running the auto merge - one or more of the following conditions was not met:"
