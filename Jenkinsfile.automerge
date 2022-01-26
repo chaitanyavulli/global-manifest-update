@@ -44,7 +44,13 @@ withVault([configuration: configuration, vaultSecrets: secrets]) {
             def AUTHOR = props.values[0].author.user.name
             def DEST_BRANCH = props.values[0].toRef.displayId
             println "ID is ${ID} , STATE is ${STATE} , VERSION is ${VERSION} , AUTHOR is ${AUTHOR} , DEST_BRANCH is ${DEST_BRANCH}"
-            if ( ( STATE == "OPEN" && ID != null && VERSION != null && AUTHOR == "ci-eng" ) && ( ! "${DEST_BRANCH}".contains("release") || "${repository_slug}" == "vru-4g-phy" ) ) {
+            if ( STATE == "OPEN" && ID != null && VERSION != null && AUTHOR == "ci-eng" ) {
+                if ( "${DEST_BRANCH}".contains("release") ) {
+                    echo "Destination branch contains release - need to approve first..."
+                    pull_req = sh(returnStdout : true,
+                        script: "curl -u pw-build:${prPass} -X POST -H Content-Type:application/json -H X-Atlassian-Token:no-check https://git.parallelwireless.net/rest/api/1.0/projects/${PROJECT}/repos/${REPOSITORY}/pull-requests/${ID}/approve").trim()
+                    println pull_req
+                }
                 pull_req = sh(returnStdout : true,
                     script: "curl -u ${prUser}:${prPass} -X POST -H Content-Type:application/json -H X-Atlassian-Token:no-check https://git.parallelwireless.net/rest/api/1.0/projects/${PROJECT}/repos/${REPOSITORY}/pull-requests/${ID}/merge?version=${VERSION}").trim()
                 println pull_req
