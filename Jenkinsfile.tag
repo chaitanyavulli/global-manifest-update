@@ -119,6 +119,13 @@ node('docker_build') {
             'integrated-packaging'      : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/integrated-packaging/pull-requests',
             'pwems-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/pwems-product-packaging/pull-requests'
             ]
+
+        def relnum_remote = [
+            'access-product-packaging'  : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/access-product-packaging/raw/relnum.txt?at=',
+            'network'                   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/network/raw/hng/relnum.txt?at=',
+            'pwems-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/pwems-product-packaging/raw/relnum.txt?at='
+        ]
+
         //special case for platdev-multi-rat - we wish to create 2 PRs - where the second one will point to feature/platdev-multi-rat
         def MULTI_RAT = false
 	/*
@@ -130,17 +137,22 @@ node('docker_build') {
         }
 	*/
         //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x onwards , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
-        if (( DEST_BRANCH.startsWith("release/REL_6.") && ( DEST_BRANCH.endsWith("x")) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" ))){
+        //              updating the destination branch according to the relnum file in the source repo
+        if (( DEST_BRANCH ==~ /^release\/REL_\d(.*)x$/ )) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" ))){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
-            def branch_cut = DEST_BRANCH.substring(0, DEST_BRANCH.length() - 1) // remove last char
-            echo "Changing the destination branch to be the latest ${branch_cut}"
-            for (rel_num in ['6','5','4','3','2','1','0'] ) {
-                retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/$branch_cut$rel_num")
-                if ( retValue == 0 ){
-                    DEST_BRANCH = "$branch_cut$rel_num"
-                    echo "$DEST_BRANCH"
-                    break
-                }
+            def relnum_repo = relnum_remote[PW_REPOSITORY]
+            sh(script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json $relnum_repo$DEST_BRANCH -o relnum.txt")
+            sh(script: "cat relnum.txt")
+            def release_num = sh(returnStdout : true,
+                script: "sed -n '/RELEASE_NUM/p' relnum.txt | tr -d ' ' | cut -d'=' -f2").trim()
+            DEST_BRANCH = "release/REL_$release_num"
+            echo "Destination branch is $DEST_BRANCH"
+            retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/$DEST_BRANCH")
+            if ( retValue != 0 ){
+                echo "ERROR: relnum file not found or release number is not found in bitbucket... exiting..."
+                currentBuild.result = 'FAILURE'
+                notifyFailure()
+                return
             }
         }
 
