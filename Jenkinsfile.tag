@@ -138,7 +138,7 @@ node('docker_build') {
 	*/
         //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x onwards , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
         //              updating the destination branch according to the relnum file in the source repo
-        if (( DEST_BRANCH ==~ /^release\/REL_\d(.*)x$/ )) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" ))){
+        if (( DEST_BRANCH ==~ /^release\/REL_\d(.*)x$/ ) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" )){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
             def relnum_repo = relnum_remote[PW_REPOSITORY]
             sh(script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json $relnum_repo$DEST_BRANCH -o relnum.txt")
