@@ -11,7 +11,7 @@ plugins used in Jenkinsfile
 
 import groovy.json.JsonSlurper
 
-node('docker_build') {
+node('k8s && small && usnh') {
 
     properties([
         buildDiscarder(
@@ -344,7 +344,7 @@ node('docker_build') {
                                             }
                                         }
                                     }
-                                } 
+                                }
                                 dir("../${PW_REPOSITORY}"){
                                     currentTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${CURRENT_COMMIT_HASH}").trim()
                                     newTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${NEW_COMMIT_HASH}").trim()
@@ -355,6 +355,22 @@ node('docker_build') {
                                     println "Warning: a latest commit hash time is already updated..."
                                     return
                                 }
+								
+								retValue = sh(returnStatus: true, script: "git config user.name")
+                                if (retValue != 0) {
+									println "git user.name is not configured. configuring now"
+									sh """
+									git config user.name "pw-build"
+									"""
+								}
+								retValue = sh(returnStatus: true, script: "git config user.email")
+                                if (retValue != 0) {
+									println "git user.email is not configured. configuring now"
+									sh """
+									git config user.email "pw-build@parallelwireless.com"
+									"""
+								}
+								
                                 retValue = sh(returnStatus: true, script: "git commit -m '${env.GIT_COMMIT_MSG}' manifest.json")
                                 if (retValue != 0){
                                     println retValue
@@ -362,6 +378,7 @@ node('docker_build') {
                                     currentBuild.result = 'SUCCESS'
                                     return
                                 }
+								
                                 retValue = sh(returnStatus: true, script: "git push --set-upstream -f origin ${INTEG_BRANCH}")
                                 if (retValue != 0){
                                     println retValue
