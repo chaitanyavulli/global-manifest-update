@@ -19,7 +19,7 @@ node('docker_build') {
         ),
         parameters([
             string(defaultValue: '', description: 'Branch Name:', name: 'push_changes_0_new_name', trim: true),
-            string(defaultValue: '', description: 'Repository Name: (Possible values: access-product-packaging core nrtric pwgui rt-monitoring uniperf pwconfig core-stacks 2g-stack pnf-vnf core-stacks-phy vru-4g-phy bbpms_bsp vru-2g-phy vru-3g-phy nodeh cws-rrh osmo2g access-iso near_rtric)', name: 'repository_slug', trim: true),
+            string(defaultValue: '', description: 'Repository Name: (Possible values: access-product-packaging core nrtric pwgui rt-monitoring uniperf pwconfig core-stacks 2g-stack pnf-vnf core-stacks-phy vru-4g-phy bbpms_bsp vru-2g-phy vru-3g-phy nodeh cws-rrh osmo2g access-iso near_rtric access-common)', name: 'repository_slug', trim: true),
             string(defaultValue: '', description: 'New Hash:', name: 'push_changes_0_new_target_hash', trim: true),
             string(defaultValue: '', description: 'PR Destination:', name: 'dest_branch', trim: true),
             string(defaultValue: 'develop', description: 'For internal Use:', name: 'global_packaging_branch', trim: true),
@@ -76,7 +76,8 @@ node('docker_build') {
             'network': 'ssh://git@git.parallelwireless.net:7999/cd/network.git',
             'vru-5g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-5g-phy.git',
             'nr-stack': 'ssh://git@git.parallelwireless.net:7999/cd/nr-stack.git',
-            'near_rtric': 'ssh://git@git.parallelwireless.net:7999/near/near_rtric.git'
+            'near_rtric': 'ssh://git@git.parallelwireless.net:7999/near/near_rtric.git',
+            'access-common': 'ssh://git@git.parallelwireless.net:7999/cd/access-common.git'
         ]
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
@@ -106,7 +107,8 @@ node('docker_build') {
             'pwems-product-packaging': ['integrated-packaging'],
             'vru-5g-phy': ['access-product-packaging'],
             'nr-stack': ['access-product-packaging'],
-            'near_rtric': ['integrated-packaging']
+            'near_rtric': ['integrated-packaging'],
+            'access-common': ['access-product-packaging']
         ]
 
         def build_jobs = [
