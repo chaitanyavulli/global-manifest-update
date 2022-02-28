@@ -26,7 +26,7 @@ node('docker_build') {
 
     ]
     def configuration = [vaultUrl: 'https://vault.parallelwireless.net',
-                         vaultCredentialId: 'pwvault',
+                         vaultCredentialId: 'pwjenkins_vault',
                          engineVersion: 2]
     withVault([configuration: configuration, vaultSecrets: secrets]) {
      timestamps {

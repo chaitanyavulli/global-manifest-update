@@ -38,7 +38,7 @@ node('k8s && small && usnh') {
 
     ]
     def configuration = [vaultUrl: 'https://vault.parallelwireless.net',
-                         vaultCredentialId: 'pwvault',
+                         vaultCredentialId: 'pwjenkins_vault',
                          engineVersion: 2]
     withVault([configuration: configuration, vaultSecrets: secrets]) {
     timestamps {
