@@ -211,7 +211,7 @@ node('k8s && small && usnh') {
                         mkdir ${PW_REPOSITORY}
                         cd ${PW_REPOSITORY}
                         git init
-                        git remote add origin -t ${dest_branch} ${mirror}
+                        git remote add origin ${mirror}
                         git fetch --no-tags
                         """
                     } 
@@ -346,7 +346,15 @@ node('k8s && small && usnh') {
                                     }
                                 }
                                 dir("../${PW_REPOSITORY}"){
-                                    currentTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${CURRENT_COMMIT_HASH}").trim()
+                                    try {
+                                        currentTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${CURRENT_COMMIT_HASH}").trim()
+                                    }
+                                    catch(Exception ex) {
+                                        println "This commit ID was not found in this repository: ${PW_REPOSITORY}, and on this branch: ${dst_branch}"
+                                        currentBuild.result = 'FAILURE'
+                                        notifyFailure()
+                                        throw ex
+                                    }
                                     newTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${NEW_COMMIT_HASH}").trim()
                                 }
                                 if (currentTimestamp < newTimestamp) {
@@ -428,10 +436,13 @@ node('k8s && small && usnh') {
 
 def notifyFailure() {
      emailext (
-         subject: "[${currentBuild.result}] - ${env.JOB_NAME} - Build #${BUILD_NUMBER}",
-         body: "<b>Build URL:</b> ${env.BUILD_URL}<br>",
          mimeType: 'text/html',
-         to: "${env.AUTHOR_EMAIL} , vbuslovich@parallelwireless.com , akliner@parallelwireless.com"
+         to: "${env.AUTHOR_EMAIL} , cc:Access-DevOps@parallelwireless.com",
+         subject: "[${currentBuild.result}] - ${env.JOB_NAME} - Build #${BUILD_NUMBER}",
+         body: "<b>Upstream Repository:</b> ${repository_slug}<br> \
+                <b>Upstream Branch:</b> ${push_changes_0_new_name}<br> \
+                <b>Upstream Sha1:</b> ${push_changes_0_new_target_hash}<br> \
+                <b>Build URL:</b> ${env.BUILD_URL}<br>"
     )
 }
 
