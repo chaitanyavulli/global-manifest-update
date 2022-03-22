@@ -77,7 +77,8 @@ node('k8s && small && usnh') {
             'vru-5g-phy': 'ssh://git@git.parallelwireless.net:7999/cd/vru-5g-phy.git',
             'nr-stack': 'ssh://git@git.parallelwireless.net:7999/cd/nr-stack.git',
             'near_rtric': 'ssh://git@git.parallelwireless.net:7999/near/near_rtric.git',
-            'access-common': 'ssh://git@git.parallelwireless.net:7999/cd/access-common.git'
+            'access-common': 'ssh://git@git.parallelwireless.net:7999/cd/access-common.git',
+	        '3rd-party-pkgs': 'ssh://git@git.parallelwireless.net:7999/cd/3rd-party-pkgs.git'
         ]
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
@@ -108,7 +109,8 @@ node('k8s && small && usnh') {
             'vru-5g-phy': ['access-product-packaging'],
             'nr-stack': ['access-product-packaging'],
             'near_rtric': ['integrated-packaging'],
-            'access-common': ['access-product-packaging']
+            'access-common': ['access-product-packaging'],
+	        '3rd-party-pkgs':['integrated-packaging']
         ]
 
         def build_jobs = [
