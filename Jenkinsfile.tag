@@ -78,7 +78,7 @@ node('k8s && small && usnh') {
             'nr-stack': 'ssh://git@git.parallelwireless.net:7999/cd/nr-stack.git',
             'near_rtric': 'ssh://git@git.parallelwireless.net:7999/near/near_rtric.git',
             'access-common': 'ssh://git@git.parallelwireless.net:7999/cd/access-common.git',
-	        '3rd-party-pkgs': 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
+	        '3rd-party-pkgs': 'sh://git@git.parallelwireless.net:7999/cd/3rd-party-pkgs.git'
         ]
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
