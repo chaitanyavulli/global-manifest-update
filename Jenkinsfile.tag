@@ -78,7 +78,7 @@ node('k8s && small && usnh') {
             'nr-stack': 'ssh://git@git.parallelwireless.net:7999/cd/nr-stack.git',
             'near_rtric': 'ssh://git@git.parallelwireless.net:7999/near/near_rtric.git',
             'access-common': 'ssh://git@git.parallelwireless.net:7999/cd/access-common.git',
-	    '3rd-party-pkgs': 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
+	        '3rd-party-pkgs': 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
         ]
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
@@ -110,7 +110,7 @@ node('k8s && small && usnh') {
             'nr-stack': ['access-product-packaging'],
             'near_rtric': ['integrated-packaging'],
             'access-common': ['access-product-packaging'],
-	    '3rd-party-pkgs':['integrated-packaging']
+	        '3rd-party-pkgs':['integrated-packaging']
         ]
 
         def build_jobs = [
@@ -142,7 +142,7 @@ node('k8s && small && usnh') {
 	*/
         //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x onwards , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
         //              updating the destination branch according to the relnum file in the source repo
-        if (( DEST_BRANCH ==~ /^release\/REL_\d(.*)x$/ ) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" || PW_REPOSITORY == "3rd-party-pkgs" )){
+        if (( DEST_BRANCH ==~ /^release\/REL_\d(.*)x$/ ) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" )){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
             def relnum_repo = relnum_remote[PW_REPOSITORY]
             sh(script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json $relnum_repo$DEST_BRANCH -o relnum.txt")
