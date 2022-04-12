@@ -130,16 +130,34 @@ node('k8s && small && usnh') {
             'pwems-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/pwems-product-packaging/raw/relnum.txt?at='
         ]
 
-        //special case for platdev-multi-rat - we wish to create 2 PRs - where the second one will point to feature/platdev-multi-rat
-        def MULTI_RAT = false
-	/*
-        if (( DEST_BRANCH == "integ/6_2_dev") && ( PW_REPOSITORY == "2g-stack" || PW_REPOSITORY == "osmo2g" )){
-            MULTI_RAT = true
+        //special case: Release branch on component is not opened at the same time - integrated packaging
+        def RELEASE_UPDATE = false
+        if ( DEST_BRANCH == "develop" && manifest_map[PW_REPOSITORY][0] == "integrated-packaging" ) {
+            sh """
+                mkdir temp ; cd temp
+                git clone ssh://git@git.parallelwireless.net:7999/cd/integrated-packaging -b develop
+            """
+            dir("temp/integrated-packaging"){
+                env.RELEASE_BRANCH = sh(returnStdout: true, script: "git branch -r --list *origin/release* | tail -1 | cut -d/ -f2-").trim()
+                echo "The lastest release branch is: ${RELEASE_BRANCH}"
+                env.BRANCHX = sh(returnStdout:true, script: "echo '${RELEASE_BRANCH}' | sed 's/.\$/x/'").trim()
+                echo "Updated release branch is: ${BRANCHX}"
+                mirror = git_remotes["${PW_REPOSITORY}"]
+                retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads $mirror refs/heads/${BRANCHX}")
+                if (retValue == 0){
+                    echo "Release branch exists on ${PW_REPOSITORY}"
+                } else if (retValue == 2){
+                    echo "Release branch is missing on ${PW_REPOSITORY}"
+                    echo "Creating a PR to update the develop hash on the release branch..."
+                    RELEASE_UPDATE = true
+                } else {
+                    echo "Warning: something is wrong... finding missing release branch on integrated packaging"
+                    notifyFailure()
+                }
+            }
+            sh 'rm -rf temp'
         }
-        if (( DEST_BRANCH == "develop") && ( PW_REPOSITORY == "core-stacks" || PW_REPOSITORY == "nodeh" || PW_REPOSITORY == "core-stacks-phy" )){
-            MULTI_RAT = true
-        }
-	*/
+
         //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x onwards , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
         //              updating the destination branch according to the relnum file in the source repo
         if (( DEST_BRANCH ==~ /^release\/REL_\d(.*)x$/ ) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" )){
@@ -307,9 +325,9 @@ node('k8s && small && usnh') {
                         }
                         retryAttempt = retryAttempt + 1
                         def dest_branches = ["${DEST_BRANCH}"]
-                        if (MULTI_RAT){
-                            println "MULTI_RAT is on"
-                            dest_branches = ["${DEST_BRANCH}","feature/platdev-multi-rat"]
+                        if (RELEASE_UPDATE){
+                            println "Running PR creation twice"
+                            dest_branches = ["${DEST_BRANCH}","${RELEASE_BRANCH}"]
                         }
                         dest_branches.each{dst_branch ->
                           def remotes = manifest_map[PW_REPOSITORY]
