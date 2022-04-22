@@ -104,13 +104,13 @@ node('k8s && small && usnh') {
             'osmo2g': ['access-product-packaging'],
             'access-iso': ['access-product-packaging'],
             'pwems-platform': ['pwems-product-packaging'],
-            'network': ['integrated-packaging'],
+            'network': ['network-product-packaging'],
             'pwems-product-packaging': ['integrated-packaging'],
             'vru-5g-phy': ['access-product-packaging'],
             'nr-stack': ['access-product-packaging'],
             'near_rtric': ['integrated-packaging'],
             'access-common': ['access-product-packaging'],
-	        '3rd-party-pkgs':['integrated-packaging']
+	        '3rd-party-pkgs':['network-product-packaging']
         ]
 
         def build_jobs = [
@@ -121,13 +121,15 @@ node('k8s && small && usnh') {
         def pull_remote = [
             'access-product-packaging'  : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/access-product-packaging/pull-requests',
             'integrated-packaging'      : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/integrated-packaging/pull-requests',
-            'pwems-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/pwems-product-packaging/pull-requests'
+            'pwems-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/pwems-product-packaging/pull-requests',
+            'network-product-packaging' : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/network-product-packaging/pull-requests'
             ]
 
         def relnum_remote = [
             'access-product-packaging'  : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/access-product-packaging/raw/relnum.txt?at=',
             'network'                   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/network/raw/hng/relnum.txt?at=',
-            'pwems-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/pwems-product-packaging/raw/relnum.txt?at='
+            'pwems-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/pwems-product-packaging/raw/relnum.txt?at=',
+            'network-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/network-product-packaging/raw/relnum.txt?at='
         ]
 
         //special case for platdev-multi-rat - we wish to create 2 PRs - where the second one will point to feature/platdev-multi-rat
@@ -142,7 +144,7 @@ node('k8s && small && usnh') {
 	*/
         //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x onwards , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
         //              updating the destination branch according to the relnum file in the source repo
-        if (( DEST_BRANCH ==~ /^release\/REL_\d(.*)x$/ ) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" )){
+        if (( DEST_BRANCH ==~ /^release\/REL_\d(.*)x$/ ) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" || PW_REPOSITORY == "network-product-packaging")){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
             def relnum_repo = relnum_remote[PW_REPOSITORY]
             sh(script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json $relnum_repo$DEST_BRANCH -o relnum.txt")
