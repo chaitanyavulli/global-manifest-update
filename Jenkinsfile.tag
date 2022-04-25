@@ -78,7 +78,8 @@ node('k8s && small && usnh') {
             'nr-stack': 'ssh://git@git.parallelwireless.net:7999/cd/nr-stack.git',
             'near_rtric': 'ssh://git@git.parallelwireless.net:7999/near/near_rtric.git',
             'access-common': 'ssh://git@git.parallelwireless.net:7999/cd/access-common.git',
-	        '3rd-party-pkgs': 'ssh://git@git.parallelwireless.net:7999/cd/3rd-party-pkgs.git'
+	        '3rd-party-pkgs': 'ssh://git@git.parallelwireless.net:7999/cd/3rd-party-pkgs.git',
+            'network-product-packaging':'ssh://git@git.parallelwireless.net:7999/cd/network-product-packaging.git'
         ]
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
@@ -110,7 +111,8 @@ node('k8s && small && usnh') {
             'nr-stack': ['access-product-packaging'],
             'near_rtric': ['integrated-packaging'],
             'access-common': ['access-product-packaging'],
-	        '3rd-party-pkgs':['network-product-packaging']
+	        '3rd-party-pkgs':['network-product-packaging'],
+            'network-product-packaging': ['integrated-packaging']
         ]
 
         def build_jobs = [
