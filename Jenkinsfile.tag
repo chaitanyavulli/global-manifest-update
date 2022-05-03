@@ -250,10 +250,10 @@ node('k8s && small && usnh') {
              */
              stage('Upstream commit message') {
                 dir("${verCode}/${PW_REPOSITORY}") {
-                    env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "echo ${PW_REPOSITORY} commit message is: `git log --pretty=format:%s -n 1 ${NEW_COMMIT_HASH}`").trim()
+                    env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "echo ${PW_REPOSITORY} commit message is: `git log --format=%B -n 1 ${NEW_COMMIT_HASH} | grep -m1 '[A-Z]\\+-[0-9]\\+'`").trim()
                     echo "${env.GIT_COMMIT_MSG}"
-                    if ( GIT_COMMIT_MSG.contains("Merge pull request") ) {
-                        env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "echo ${PW_REPOSITORY} commit message is: `git log --pretty=format:%B -n 1 ${NEW_COMMIT_HASH} | tail -1`").trim()
+                    if ( GIT_COMMIT_MSG.endsWith("commit message is:") ) {
+                        env.GIT_COMMIT_MSG = sh(returnStdout:true, script: "echo ${PW_REPOSITORY} commit message is: `git log --pretty=format:%s -n 1 ${NEW_COMMIT_HASH}`").trim()
                         echo "${env.GIT_COMMIT_MSG}"
                     }
                     env.GIT_COMMIT_MSG="${GIT_COMMIT_MSG}".replace("\"", "") //Remove any double quotes for the JSON pull request creation
