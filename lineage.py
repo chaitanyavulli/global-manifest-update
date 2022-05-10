@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014-2021 Parallel Wireless, Inc. All rights reserved.
+# Copyright (c) 2014-2022 Parallel Wireless, Inc. All rights reserved.
 #
 
 import json
@@ -57,7 +57,7 @@ def clone(repository,sha1):
 
     os.mkdir(repository)
     os.chdir(repository)
-    pipe = sp.Popen(["git init"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
+    pipe = sp.Popen(["GIT_LFS_SKIP_SMUDGE=1 git init"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
     res = pipe.communicate() # ('Initialized empty Git repository in /home/vbuslovich/source/test/test4/.git/\n', '')
 
     #pipe = sp.Popen(["git remote add origin "+git_url+"/"+project+"/"+repository+"; git fetch -n --depth "+str(clone_depth)+" origin "+sha1], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
@@ -65,7 +65,7 @@ def clone(repository,sha1):
     res = pipe.communicate() # ('', 'From ssh://git.parallelwireless.net:7999/cd/cws-rrh\n * branch            382d11aefe6ef77a7747fb8f7a4df36bc7b110a9 -> FETCH_HEAD\n')
 
     #pipe = sp.Popen(["GIT_LFS_SKIP_SMUDGE=1 git checkout FETCH_HEAD"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
-    pipe = sp.Popen(["git reset --hard "+sha1], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
+    pipe = sp.Popen(["GIT_LFS_SKIP_SMUDGE=1 git reset --hard "+sha1], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
     res = pipe.communicate() # ('', "Note: checking out 'FETCH_HEAD'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by performing another checkout.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -b with the checkout command again. Example:\n\n  git checkout -b <new-branch-name>\n\nHEAD is now at 382d11a... BTSDEV-1855: Update the timeout for the OpenStack VM creation\n")
 
     pipe = sp.Popen(["git log -1 --pretty=format:%s"], shell=True , stdout=sp.PIPE, stderr=sp.PIPE)
