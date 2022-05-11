@@ -461,7 +461,7 @@ node('k8s && small && usnh') {
 def notifyFailure() {
      emailext (
          mimeType: 'text/html',
-         to: "${env.AUTHOR_EMAIL} , cc:Access-DevOps@parallelwireless.com",
+         to: "${env.AUTHOR_EMAIL} , cc:DevOps-CICD@parallelwireless.com",
          subject: "[${currentBuild.result}] - ${env.JOB_NAME} - Build #${BUILD_NUMBER}",
          body: "<b>Upstream Repository:</b> ${repository_slug}<br> \
                 <b>Upstream Branch:</b> ${push_changes_0_new_name}<br> \
