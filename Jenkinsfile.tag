@@ -105,14 +105,12 @@ node('k8s && small && usnh') {
             'osmo2g': ['access-product-packaging'],
             'access-iso': ['access-product-packaging'],
             'pwems-platform': ['pwems-product-packaging'],
-            'network': ['network-product-packaging'],
-            'pwems-product-packaging': ['integrated-packaging'],
             'vru-5g-phy': ['access-product-packaging'],
             'nr-stack': ['access-product-packaging'],
             'near_rtric': ['integrated-packaging'],
             'access-common': ['access-product-packaging'],
-	        '3rd-party-pkgs':['network-product-packaging'],
-            'network-product-packaging': ['integrated-packaging']
+            '3rd-party-pkgs':['network-product-packaging'],
+            'network-product-packaging':['integrated-packaging']
         ]
 
         def build_jobs = [
@@ -132,7 +130,32 @@ node('k8s && small && usnh') {
             'network'                   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/network/raw/hng/relnum.txt?at=',
             'pwems-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/pwems-product-packaging/raw/relnum.txt?at=',
             'network-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/network-product-packaging/raw/relnum.txt?at='
+
         ]
+        
+        def relnum_repo = relnum_remote[PW_REPOSITORY]
+        sh(script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json $relnum_repo$DEST_BRANCH -o relnum.txt")
+        sh(script: "cat relnum.txt")
+        def release_num = sh(returnStdout : true,script: "sed -n '/RELEASE_NUM/p' relnum.txt | tr -d ' ' | cut -d'=' -f2").trim()
+
+
+        //From release 6.5 onwards structure of manifest.json is changed. Below logic implemented to take care of older releases
+        if ( PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" )
+        {
+            if ( release_num >= 6.5){
+                echo "Detected release is ${release_num}. Hence modification in manifest map is required as per new manifest structure.."
+                manifest_map.put('network',['network-product-packaging'])
+                manifest_map.put('pwems-product-packaging',['integrated-packaging'])
+                echo "Modified manifest map is ${manifest_map}"
+            }
+            else {
+                echo "Detected release is ${release_num}. Hence modification in manifest map is required as per old manifest structure.."
+                manifest_map.put('network',['integrated-packaging'])
+                manifest_map.put('pwems-product-packaging',['integrated-packaging'])
+                echo "Modified manifest map is ${manifest_map}"
+            }
+        }
+
 
         //special case for platdev-multi-rat - we wish to create 2 PRs - where the second one will point to feature/platdev-multi-rat
         def MULTI_RAT = false
@@ -147,12 +170,7 @@ node('k8s && small && usnh') {
         //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x onwards , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
         //              updating the destination branch according to the relnum file in the source repo
         if (( DEST_BRANCH ==~ /^release\/REL_\d(.*)x$/ ) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "pwems-product-packaging" || PW_REPOSITORY == "network-product-packaging")){
-            def packaging_repo = manifest_map[PW_REPOSITORY][0]
-            def relnum_repo = relnum_remote[PW_REPOSITORY]
-            sh(script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json $relnum_repo$DEST_BRANCH -o relnum.txt")
-            sh(script: "cat relnum.txt")
-            def release_num = sh(returnStdout : true,
-                script: "sed -n '/RELEASE_NUM/p' relnum.txt | tr -d ' ' | cut -d'=' -f2").trim()
+            def packaging_repo = manifest_map[PW_REPOSITORY][0]            
             DEST_BRANCH = "release/REL_$release_num"
             echo "Destination branch is $DEST_BRANCH"
             retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/$DEST_BRANCH")
