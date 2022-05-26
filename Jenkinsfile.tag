@@ -136,13 +136,14 @@ node('k8s && small && usnh') {
         def relnum_repo = relnum_remote[PW_REPOSITORY]
         sh(script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json $relnum_repo$DEST_BRANCH -o relnum.txt")
         sh(script: "cat relnum.txt")
-        def release_num = sh(returnStdout : true,script: "sed -n '/RELEASE_NUM/p' relnum.txt | tr -d ' ' | cut -d'=' -f2").trim()
-
+        def release_num = sh(returnStdout : true, script: "sed -n '/RELEASE_NUM/p' relnum.txt | tr -d ' ' | cut -d'=' -f2 | cut -c-3").trim()
+        def rel_num_float = release_num as float
+        echo "${rel_num_float}"
 
         //From release 6.5 onwards structure of manifest.json is changed. Below logic implemented to take care of older releases
         if ( PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" )
         {
-            if ( release_num >= 6.5){
+            if ( rel_num_float >= 6.5){
                 echo "Detected release is ${release_num}. Hence modification in manifest map is required as per new manifest structure.."
                 manifest_map.put('network',['network-product-packaging'])
                 manifest_map.put('pwems-product-packaging',['integrated-packaging'])
@@ -155,7 +156,6 @@ node('k8s && small && usnh') {
                 echo "Modified manifest map is ${manifest_map}"
             }
         }
-
 
         //special case for platdev-multi-rat - we wish to create 2 PRs - where the second one will point to feature/platdev-multi-rat
         def MULTI_RAT = false
