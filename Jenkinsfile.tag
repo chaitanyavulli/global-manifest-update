@@ -133,24 +133,24 @@ node('k8s && small && usnh') {
 
         ]
         
-        def relnum_repo = relnum_remote[PW_REPOSITORY]
-        sh(script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json $relnum_repo$DEST_BRANCH -o relnum.txt")
-        sh(script: "cat relnum.txt")
-        def release_num = sh(returnStdout : true, script: "sed -n '/RELEASE_NUM/p' relnum.txt | tr -d ' ' | cut -d'=' -f2 | cut -c-3").trim()
-        def rel_num_float = release_num as float
-        echo "${rel_num_float}"
-
         //From release 6.5 onwards structure of manifest.json is changed. Below logic implemented to take care of older releases
         if ( PW_REPOSITORY == "network" || PW_REPOSITORY == "pwems-product-packaging" )
         {
+            def relnum_repo_nw_pkg = relnum_remote[PW_REPOSITORY]
+            sh(script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json $relnum_repo_nw_pkg$DEST_BRANCH -o relnum.txt")
+            sh(script: "cat relnum.txt")
+            def release_num_nw_pwems = sh(returnStdout : true, script: "sed -n '/RELEASE_NUM/p' relnum.txt | tr -d ' ' | cut -d'=' -f2 | cut -c-3").trim()
+            def rel_num_float = release_num_nw_pwems as float
+            echo "${rel_num_float}"
+
             if ( rel_num_float >= 6.5){
-                echo "Detected release is ${release_num}. Hence modification in manifest map is required as per new manifest structure.."
+                echo "Detected release is ${rel_num_float}. Hence modification in manifest map is required as per new manifest structure.."
                 manifest_map.put('network',['network-product-packaging'])
                 manifest_map.put('pwems-product-packaging',['integrated-packaging'])
                 echo "Modified manifest map is ${manifest_map}"
             }
             else {
-                echo "Detected release is ${release_num}. Hence modification in manifest map is required as per old manifest structure.."
+                echo "Detected release is ${rel_num_float}. Hence modification in manifest map is required as per old manifest structure.."
                 manifest_map.put('network',['integrated-packaging'])
                 manifest_map.put('pwems-product-packaging',['integrated-packaging'])
                 echo "Modified manifest map is ${manifest_map}"
@@ -170,7 +170,12 @@ node('k8s && small && usnh') {
         //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x onwards , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
         //              updating the destination branch according to the relnum file in the source repo
         if (( DEST_BRANCH ==~ /^release\/REL_\d(.*)x$/ ) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "pwems-product-packaging" || PW_REPOSITORY == "network-product-packaging")){
-            def packaging_repo = manifest_map[PW_REPOSITORY][0]            
+            def packaging_repo = manifest_map[PW_REPOSITORY][0]
+            def relnum_repo = relnum_remote[PW_REPOSITORY]
+            sh(script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json $relnum_repo$DEST_BRANCH -o relnum.txt")
+            sh(script: "cat relnum.txt")
+            def release_num = sh(returnStdout : true,
+                script: "sed -n '/RELEASE_NUM/p' relnum.txt | tr -d ' ' | cut -d'=' -f2").trim()
             DEST_BRANCH = "release/REL_$release_num"
             echo "Destination branch is $DEST_BRANCH"
             retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ssh://git@git.parallelwireless.net:7999/cd/${packaging_repo} refs/heads/$DEST_BRANCH")
