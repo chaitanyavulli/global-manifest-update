@@ -402,6 +402,10 @@ node('k8s && small && usnh') {
                                         }
                                     }
                                 }
+                                if ( CURRENT_COMMIT_HASH == "") {
+                                    println "Warning: repository ${PW_REPOSITORY} not found in the manifest... exiting"
+                                    return
+                                }
                                 dir("../${PW_REPOSITORY}"){
                                     try {
                                         currentTimestamp = sh(returnStdout: true, script: "git show -s --format=%ct ${CURRENT_COMMIT_HASH}").trim()
