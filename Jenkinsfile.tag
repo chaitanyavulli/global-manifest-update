@@ -78,8 +78,9 @@ node('k8s && small && usnh') {
             'nr-stack': 'ssh://git@git.parallelwireless.net:7999/cd/nr-stack.git',
             'near_rtric': 'ssh://git@git.parallelwireless.net:7999/near/near_rtric.git',
             'access-common': 'ssh://git@git.parallelwireless.net:7999/cd/access-common.git',
-	        '3rd-party-pkgs': 'ssh://git@git.parallelwireless.net:7999/cd/3rd-party-pkgs.git',
-            'network-product-packaging':'ssh://git@git.parallelwireless.net:7999/cd/network-product-packaging.git'
+            '3rd-party-pkgs': 'ssh://git@git.parallelwireless.net:7999/cd/3rd-party-pkgs.git',
+            'network-product-packaging':'ssh://git@git.parallelwireless.net:7999/cd/network-product-packaging.git',
+            'network-integrated-packaging':'ssh://git@git.parallelwireless.net:7999/cd/network-integrated-packaging.git'
         ]
 
         def repo_mirror_link = 'ssh://git@git.parallelwireless.net:7999/cd/global-manifest-update.git'
@@ -110,7 +111,8 @@ node('k8s && small && usnh') {
             'near_rtric': ['integrated-packaging'],
             'access-common': ['access-product-packaging'],
             '3rd-party-pkgs':['network-product-packaging'],
-            'network-product-packaging':['integrated-packaging']
+            'network-product-packaging':['network-integrated-packaging'],
+            'network-integrated-packaging':['integrated-packaging']
         ]
 
         def build_jobs = [
@@ -122,14 +124,16 @@ node('k8s && small && usnh') {
             'access-product-packaging'  : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/access-product-packaging/pull-requests',
             'integrated-packaging'      : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/integrated-packaging/pull-requests',
             'pwems-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/pwems-product-packaging/pull-requests',
-            'network-product-packaging' : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/network-product-packaging/pull-requests'
+            'network-product-packaging' : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/network-product-packaging/pull-requests',
+            'network-integrated-packaging' : 'https://git.parallelwireless.net/rest/api/1.0/projects/CD/repos/network-integrated-packaging/pull-requests'
             ]
 
         def relnum_remote = [
             'access-product-packaging'  : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/access-product-packaging/raw/relnum.txt?at=',
             'network'                   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/network/raw/hng/relnum.txt?at=',
             'pwems-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/pwems-product-packaging/raw/relnum.txt?at=',
-            'network-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/network-product-packaging/raw/relnum.txt?at='
+            'network-product-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/network-product-packaging/raw/relnum.txt?at=',
+            'network-integrated-packaging'   : 'https://git.parallelwireless.net/rest/api/1.0/projects/cd/repos/network-integrated-packaging/raw/relnum.txt?at='
 
         ]
         
@@ -146,7 +150,7 @@ node('k8s && small && usnh') {
             if ( rel_num_float >= 6.5){
                 echo "Detected release is ${rel_num_float}. Hence modification in manifest map is required as per new manifest structure.."
                 manifest_map.put('network',['network-product-packaging'])
-                manifest_map.put('pwems-product-packaging',['integrated-packaging'])
+                manifest_map.put('pwems-product-packaging',['network-integrated-packaging'])
                 echo "Modified manifest map is ${manifest_map}"
             }
             else {
@@ -187,7 +191,7 @@ node('k8s && small && usnh') {
 
         //special case: access-product-packaging,network,pwems-product-packaging  release/REL_6.2.x onwards , integrated-packaging = release/REL_6.2. 0,1,2,3,4...
         //              updating the destination branch according to the relnum file in the source repo
-        if (( DEST_BRANCH ==~ /^release\/REL_\d(.*)x$/ ) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "pwems-product-packaging" || PW_REPOSITORY == "network-product-packaging")){
+        if (( DEST_BRANCH ==~ /^release\/REL_\d(.*)x$/ ) && ( PW_REPOSITORY == "access-product-packaging" || PW_REPOSITORY == "pwems-product-packaging" || PW_REPOSITORY == "network-product-packaging" || PW_REPOSITORY == "network-integrated-packaging" )){
             def packaging_repo = manifest_map[PW_REPOSITORY][0]
             def relnum_repo = relnum_remote[PW_REPOSITORY]
             sh(script: "curl -u ${prUser}:${prPass} -X GET -H Content-Type:application/json $relnum_repo$DEST_BRANCH -o relnum.txt")
