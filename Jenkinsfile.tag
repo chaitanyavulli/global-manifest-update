@@ -381,13 +381,7 @@ node('k8s && small && usnh') {
 
                             dir("${remote}"){
                                 sh(returnStatus: true, script: "pwd")
-                                retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ${mirror} refs/heads/${INTEG_BRANCH}")
-                                if (retValue != 0){
-                                    sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${dst_branch}")
-                                } else {
-                                    sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${INTEG_BRANCH}")
-                                    sh(returnStatus: true, script: "git rebase origin/${dst_branch}")
-                                }
+                                sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${dst_branch}")
                                 
                                 def CURRENT_COMMIT_HASH = ""
                                 def currentTimestamp = ""
