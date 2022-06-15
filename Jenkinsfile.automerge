@@ -29,6 +29,10 @@ if ( env.push_changes_0_new_target_hash_pkg != null ){
     echo "Note: changing hash to upstream ${push_changes_0_new_target_hash_pkg}"
     HASH = "${push_changes_0_new_target_hash_pkg}"
 }
+if ( repository_slug.contains("simulation") ){
+    echo 'Note: simulation in repo name updating project to SC'
+    PROJECT = "sc"
+}
 
 withVault([configuration: configuration, vaultSecrets: secrets]) {
     stage('Auto Merge'){
