@@ -380,8 +380,24 @@ node('k8s && small && usnh') {
                             """
 
                             dir("${remote}"){
-                                sh(returnStatus: true, script: "pwd")
-                                sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${dst_branch}")
+                                retValue = sh(returnStatus: true, script: "git config user.name")
+                                if (retValue != 0) {
+                                    println "NOTE: git username is not configured. configuring now"
+                                    sh(returnStatus: true, script: "git config user.name pw-build")
+                                }
+                                retValue = sh(returnStatus: true, script: "git config user.email")
+                                if (retValue != 0) {
+                                    println "NOTE: git user.email is not configured. configuring now"
+                                    sh(returnStatus: true, script: "git config user.email pw-build@parallelwireless.com")
+                                }
+
+                                retValue = sh(returnStatus: true, script: "git ls-remote --exit-code --heads ${mirror} refs/heads/${INTEG_BRANCH}")
+                                if (retValue != 0){
+                                    sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${dst_branch}")
+                                } else {
+                                    sh(returnStatus: true, script: "git checkout -b ${INTEG_BRANCH} origin/${INTEG_BRANCH}")
+                                    sh(returnStatus: true, script: "git rebase origin/${dst_branch}")
+                                }
                                 
                                 def CURRENT_COMMIT_HASH = ""
                                 def currentTimestamp = ""
@@ -422,21 +438,6 @@ node('k8s && small && usnh') {
                                     println "Warning: a latest commit hash time is already updated..."
                                     return
                                 }
-								
-								retValue = sh(returnStatus: true, script: "git config user.name")
-                                if (retValue != 0) {
-									println "git user.name is not configured. configuring now"
-									sh """
-									git config user.name "pw-build"
-									"""
-								}
-								retValue = sh(returnStatus: true, script: "git config user.email")
-                                if (retValue != 0) {
-									println "git user.email is not configured. configuring now"
-									sh """
-									git config user.email "pw-build@parallelwireless.com"
-									"""
-								}
 								
                                 retValue = sh(returnStatus: true, script: "git commit -m '${env.GIT_COMMIT_MSG}' manifest.json")
                                 if (retValue != 0){
